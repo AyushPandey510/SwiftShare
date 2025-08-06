@@ -1,0 +1,68 @@
+name: swiftshare_mobile
+description: SwiftShare Mobile - Offline File Sharing App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  
+  # State Management
+  provider: ^6.0.5
+  riverpod: ^2.4.9
+  
+  # Network & Communication
+  http: ^1.1.0
+  web_socket_channel: ^2.4.0
+  connectivity_plus: ^5.0.2
+  
+  # File Handling
+  file_picker: ^10.2.1  # Updated to latest version for compatibility
+  path_provider: ^2.1.1
+  permission_handler: ^11.1.0
+  
+  # UI Components
+  flutter_svg: ^2.0.9
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^3.5.6  # Re-enabled since NDK is now working
+  lottie: ^2.7.0
+  shimmer: ^3.0.0
+  
+  # Utilities
+  uuid: ^4.2.1
+  intl: ^0.19.0
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
+  
+  # Platform Specific
+  network_info_plus: ^4.1.0
+  wifi_scan: ^0.4.0
+  nearby_connections: ^3.2.0+1  # Re-enabled since NDK is now working
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/animations/
+    
+  # Fonts section commented out until font files are added
+  # fonts:
+  #   - family: Poppins
+  #     fonts:
+  #       - asset: assets/fonts/Poppins-Regular.ttf
+  #       - asset: assets/fonts/Poppins-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Poppins-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Poppins-Bold.ttf
+  #         weight: 700 

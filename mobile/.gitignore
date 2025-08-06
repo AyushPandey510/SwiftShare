@@ -1,0 +1,49 @@
+# General
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+
+# IDEs and Project Settings
+.atom/
+.idea/
+*.iml
+*.ipr
+*.iws
+.history
+.vscode/
+.svn/
+
+# Build System & Metadata
+.build/
+.buildlog/
+.swiftpm/
+migrate_working_dir/
+
+# Dart/Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub/
+.pub-cache/
+/build/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# Android
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+
+# Symbolication & Obfuscation
+app.*.symbols
+app.*.map.json
+
+# Rust-specific
+/target/
+/**/*.rlib
+**/*.pdb
+# Node.js
+/desktop/node_modules/
+

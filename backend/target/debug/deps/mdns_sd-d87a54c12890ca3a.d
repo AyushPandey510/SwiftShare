@@ -1,0 +1,11 @@
+C:\Users\pandey\SwiftShare\backend\target\debug\deps\libmdns_sd-d87a54c12890ca3a.rmeta: C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\lib.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\dns_parser.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\error.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\service_daemon.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\service_info.rs
+
+C:\Users\pandey\SwiftShare\backend\target\debug\deps\libmdns_sd-d87a54c12890ca3a.rlib: C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\lib.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\dns_parser.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\error.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\service_daemon.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\service_info.rs
+
+C:\Users\pandey\SwiftShare\backend\target\debug\deps\mdns_sd-d87a54c12890ca3a.d: C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\lib.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\dns_parser.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\error.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\service_daemon.rs C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\service_info.rs
+
+C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\lib.rs:
+C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\dns_parser.rs:
+C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\error.rs:
+C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\service_daemon.rs:
+C:\Users\pandey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\mdns-sd-0.6.1\src\service_info.rs:

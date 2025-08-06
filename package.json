@@ -1,0 +1,73 @@
+{
+  "name": "swiftshare",
+  "version": "1.0.0",
+  "description": "Cross-platform offline file sharing application",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:desktop\" \"npm run dev:mobile\"",
+    "dev:backend": "cd backend && cargo run",
+    "dev:desktop": "cd desktop && npm run electron-dev",
+    "dev:mobile": "cd mobile && flutter run",
+    "dev:web": "cd web && npm run dev",
+    "build": "npm run build:backend && npm run build:desktop && npm run build:mobile",
+    "build:backend": "cd backend && cargo build --release",
+    "build:desktop": "cd desktop && npm run electron-pack",
+    "build:mobile": "cd mobile && flutter build apk --release",
+    "build:web": "cd web && npm run build",
+    "test": "npm run test:backend && npm run test:desktop && npm run test:mobile",
+    "test:backend": "cd backend && cargo test",
+    "test:desktop": "cd desktop && npm test",
+    "test:mobile": "cd mobile && flutter test",
+    "test:web": "cd web && npm test",
+    "lint": "npm run lint:backend && npm run lint:desktop && npm run lint:web",
+    "lint:backend": "cd backend && cargo clippy",
+    "lint:desktop": "cd desktop && npm run lint",
+    "lint:web": "cd web && npm run lint",
+    "format": "npm run format:backend && npm run format:desktop && npm run format:web",
+    "format:backend": "cd backend && cargo fmt",
+    "format:desktop": "cd desktop && npm run format",
+    "format:web": "cd web && npm run format",
+    "clean": "npm run clean:backend && npm run clean:desktop && npm run clean:mobile",
+    "clean:backend": "cd backend && cargo clean",
+    "clean:desktop": "cd desktop && rm -rf node_modules dist",
+    "clean:mobile": "cd mobile && flutter clean",
+    "clean:web": "cd web && rm -rf node_modules .next",
+    "install:all": "npm run install:backend && npm run install:desktop && npm run install:web",
+    "install:backend": "cd backend && cargo check",
+    "install:desktop": "cd desktop && npm install",
+    "install:web": "cd web && npm install",
+    "setup": "npm run install:all && npm run build:backend",
+    "start": "npm run dev:backend",
+    "docker:build": "docker build -t swiftshare .",
+    "docker:run": "docker run -p 8080:8080 -p 8081:8081 swiftshare",
+    "release": "npm run build && npm run test && npm run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1",
+    "wait-on": "^7.0.1",
+    "cross-env": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/swiftshare.git"
+  },
+  "keywords": [
+    "file-sharing",
+    "offline",
+    "cross-platform",
+    "rust",
+    "react",
+    "flutter",
+    "electron"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/swiftshare/issues"
+  },
+  "homepage": "https://github.com/yourusername/swiftshare#readme"
+} 
