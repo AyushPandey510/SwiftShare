@@ -176,16 +176,28 @@ jobs:
     runs-on: ubuntu-latest
     needs: [backend, desktop, mobile, web, docker, security]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write        # ← overrides top-level contents: read
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build backend release binary
+        working-directory: ./backend
+        run: |
+          cargo build --release
+          tar -czf swiftshare-backend-${{ github.run_number }}.tar.gz target/release/swiftshare-backend
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
           body: |
             Changes in this Release:
             - Backend improvements
@@ -194,19 +206,6 @@ jobs:
             - Web interface additions
           draft: false
           prerelease: false
-      
-      - name: Build and upload backend artifacts
-        run: |
-          cd backend
-          cargo build --release
-          tar -czf swiftshare-backend-${{ github.run_number }}.tar.gz target/release/swiftshare-backend
-      
-      - name: Upload backend artifacts
-        uses: actions/upload-release-asset@v1
+          files: ./backend/swiftshare-backend-${{ github.run_number }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./backend/swiftshare-backend-${{ github.run_number }}.tar.gz
-          asset_name: swiftshare-backend-${{ github.run_number }}.tar.gz
-          asset_content_type: application/gzip 
