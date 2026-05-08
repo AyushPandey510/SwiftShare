@@ -469,10 +469,7 @@ fn sanitize_filename(filename: &str) -> String {
     }
 }
 
-async fn locate_uploaded_file_by_code(
-    state: &AppState,
-    code: &str,
-) -> Option<UploadedFile> {
+async fn locate_uploaded_file_by_code(state: &AppState, code: &str) -> Option<UploadedFile> {
     {
         let uploaded_files = state.uploaded_files.read().await;
         if let Some(uploaded_file) = uploaded_files.get(code).cloned() {
