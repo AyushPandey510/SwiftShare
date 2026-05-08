@@ -315,7 +315,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            _SettingsItem(
+            const _SettingsItem(
               icon: Icons.info,
               title: 'Version',
               subtitle: '1.0.0',

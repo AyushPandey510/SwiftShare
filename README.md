@@ -31,10 +31,11 @@ SwiftShare/
 
 ### Prerequisites
 
-- **Rust** (1.70+): [Install Rust](https://rustup.rs/)
-- **Node.js** (18+): [Install Node.js](https://nodejs.org/)
-- **npm** or **yarn**
-- **Flutter** (3.0+): [Install Flutter](https://flutter.dev/docs/get-started/install)
+- **Docker & Docker Compose**: [Install Docker](https://docs.docker.com/get-docker/)
+- **Rust** (1.70+): [Install Rust](https://rustup.rs/) *(for development only)*
+- **Node.js** (18+): [Install Node.js](https://nodejs.org/) *(for development only)*
+- **npm** or **yarn** *(for development only)*
+- **Flutter** (3.0+): [Install Flutter](https://flutter.dev/docs/get-started/install) *(for development only)*
 
 ### 1. Clone and Setup
 
@@ -43,14 +44,44 @@ git clone <repository-url>
 cd SwiftShare
 ```
 
-### 2. Start Backend
+### 2. Quick Start with Docker (Recommended)
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+The application will be available at:
+- **Web Frontend**: http://localhost
+- **Backend API**: http://localhost:3004
+- **File Transfers**: http://localhost:3005
+
+### 3. Development Setup (Alternative)
+
+#### Start Backend (Development)
 
 ```bash
 cd backend
 cargo run
 ```
 
-The backend will start on `http://localhost:8080`
+The backend will start on `http://localhost:3004`
+
+#### Start Web Frontend (Development)
+
+```bash
+cd web-frontend
+npm install
+npm run dev
+```
+
+The frontend will start on `http://localhost:5173`
 
 **For Real-Time File Sharing:**
 The mobile app now automatically detects and configures the backend! No manual setup required.
@@ -193,11 +224,32 @@ Edit `desktop/src/store/store.js` to configure:
 
 ## 🧪 Testing
 
+### Docker Testing
+
+```bash
+# Test the full stack
+docker-compose up --build
+
+# Run backend tests in container
+docker-compose exec backend cargo test
+
+# Check service health
+curl http://localhost/health
+curl http://localhost:3004/api/devices
+```
+
 ### Backend Tests
 
 ```bash
 cd backend
 cargo test
+```
+
+### Frontend Tests
+
+```bash
+cd web-frontend
+npm test
 ```
 
 ### Desktop Tests
@@ -270,7 +322,74 @@ curl -X POST http://localhost:8082/api/transfer \
 
 ## 🚀 Deployment
 
-### Backend Deployment
+### Docker Deployment (Recommended)
+
+#### Using Docker Compose (Easiest)
+
+```bash
+# Build and start all services
+docker-compose up --build -d
+
+# View service status
+docker-compose ps
+
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Stop services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+
+# Rebuild after code changes
+docker-compose up --build --force-recreate -d
+```
+
+#### Individual Service Deployment
+
+**Backend Deployment:**
+
+```bash
+# Build backend image
+docker build -t swiftshare-backend .
+
+# Run backend container
+docker run -d \
+  --name swiftshare-backend \
+  -p 3001:3001 \
+  -p 3002:3002 \
+  -v swiftshare-data:/app/data \
+  -v swiftshare-downloads:/app/downloads \
+  swiftshare-backend
+```
+
+**Frontend Deployment:**
+
+```bash
+# Build frontend image
+cd web-frontend
+docker build -t swiftshare-frontend .
+
+# Run frontend container
+docker run -d \
+  --name swiftshare-frontend \
+  -p 80:80 \
+  swiftshare-frontend
+```
+
+#### Production Considerations
+
+- **SSL/TLS**: Add nginx reverse proxy with Let's Encrypt
+- **Environment Variables**: Use `.env` files for sensitive config
+- **Monitoring**: Add health checks and logging
+- **Scaling**: Use Docker Swarm or Kubernetes for multiple instances
+- **Backup**: Regular backup of persistent volumes
+
+### Manual Deployment (Development)
+
+#### Backend Deployment
 
 1. **Build for production**:
    ```bash
@@ -278,10 +397,9 @@ curl -X POST http://localhost:8082/api/transfer \
    cargo build --release
    ```
 
-2. **Run with Docker**:
+2. **Run the binary**:
    ```bash
-   docker build -t swiftshare-backend .
-   docker run -p 8082:8082 swiftshare-backend
+   ./target/release/swiftshare-backend
    ```
 
 ### Desktop Deployment
@@ -345,5 +463,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**SwiftShare** - Fast, secure, and simple file sharing across all your devices! 🚀 #   S w i f t S h a r e  
+**SwiftShare** - Fast, secure, and simple file sharing across all your devices! 🚀 #   S w i f t S h a r e 
+ 
  

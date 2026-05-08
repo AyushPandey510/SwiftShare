@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -9,8 +8,8 @@ import 'package:uuid/uuid.dart';
 import '../config/app_config.dart';
 
 class FileTransferService {
-  static  String _baseUrl = AppConfig.backendBaseUrl;
-  static  String _wsUrl = AppConfig.websocketUrl;
+  static  final String _baseUrl = AppConfig.backendBaseUrl;
+  static  final String _wsUrl = AppConfig.websocketUrl;
   
   WebSocketChannel? _channel;
   final Map<String, Function(double)> _progressCallbacks = {};

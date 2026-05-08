@@ -1,10 +1,14 @@
-use std::path::PathBuf;
-use sqlx::{sqlite::SqlitePool, Row};
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use anyhow::Result;
-use tracing::{info, error};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+use sqlx::{
+    sqlite::{SqliteConnectOptions, SqlitePool},
+    Row,
+};
+use std::path::PathBuf;
+use std::str::FromStr;
+use tracing::info;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransferRecord {
@@ -44,18 +48,19 @@ impl TransferDatabase {
         if let Some(parent) = database_path.parent() {
             tokio::fs::create_dir_all(parent).await?;
         }
-        
-        let database_url = if database_path.to_string_lossy() == ":memory:" {
-            "sqlite::memory:".to_string()
+
+        let options = if database_path.to_string_lossy() == ":memory:" {
+            SqliteConnectOptions::from_str("sqlite::memory:")?
         } else {
-            format!("sqlite:{}", database_path.display())
+            SqliteConnectOptions::from_str(&format!("sqlite:{}", database_path.display()))?
+                .create_if_missing(true)
         };
-        
-        let pool = SqlitePool::connect(&database_url).await?;
-        
+
+        let pool = SqlitePool::connect_with(options).await?;
+
         // Create tables
         Self::create_tables(&pool).await?;
-        
+
         Ok(Self { pool })
     }
 
@@ -75,8 +80,10 @@ impl TransferDatabase {
                 speed REAL,
                 error_message TEXT
             )
-            "#
-        ).execute(pool).await?;
+            "#,
+        )
+        .execute(pool)
+        .await?;
 
         // Create devices table
         sqlx::query(
@@ -93,8 +100,10 @@ impl TransferDatabase {
                 capabilities TEXT NOT NULL,
                 version TEXT
             )
-            "#
-        ).execute(pool).await?;
+            "#,
+        )
+        .execute(pool)
+        .await?;
 
         info!("Database tables created successfully");
         Ok(())
@@ -125,12 +134,10 @@ impl TransferDatabase {
     }
 
     pub async fn get_transfer(&self, transfer_id: Uuid) -> Result<Option<TransferRecord>> {
-        let row = sqlx::query(
-            "SELECT * FROM transfers WHERE id = ?"
-        )
-        .bind(transfer_id.to_string())
-        .fetch_optional(&self.pool)
-        .await?;
+        let row = sqlx::query("SELECT * FROM transfers WHERE id = ?")
+            .bind(transfer_id.to_string())
+            .fetch_optional(&self.pool)
+            .await?;
 
         if let Some(row) = row {
             Ok(Some(Self::row_to_transfer_record(row)?))
@@ -141,14 +148,13 @@ impl TransferDatabase {
 
     pub async fn get_all_transfers(&self, limit: Option<i64>) -> Result<Vec<TransferRecord>> {
         let query = if let Some(limit) = limit {
-            sqlx::query("SELECT * FROM transfers ORDER BY start_time DESC LIMIT ?")
-                .bind(limit)
+            sqlx::query("SELECT * FROM transfers ORDER BY start_time DESC LIMIT ?").bind(limit)
         } else {
             sqlx::query("SELECT * FROM transfers ORDER BY start_time DESC")
         };
 
         let rows = query.fetch_all(&self.pool).await?;
-        
+
         let mut transfers = Vec::new();
         for row in rows {
             transfers.push(Self::row_to_transfer_record(row)?);
@@ -158,12 +164,10 @@ impl TransferDatabase {
     }
 
     pub async fn get_transfers_by_status(&self, status: &str) -> Result<Vec<TransferRecord>> {
-        let rows = sqlx::query(
-            "SELECT * FROM transfers WHERE status = ? ORDER BY start_time DESC"
-        )
-        .bind(status)
-        .fetch_all(&self.pool)
-        .await?;
+        let rows = sqlx::query("SELECT * FROM transfers WHERE status = ? ORDER BY start_time DESC")
+            .bind(status)
+            .fetch_all(&self.pool)
+            .await?;
 
         let mut transfers = Vec::new();
         for row in rows {
@@ -174,26 +178,27 @@ impl TransferDatabase {
     }
 
     pub async fn update_transfer_status(&self, transfer_id: Uuid, status: &str) -> Result<()> {
-        sqlx::query(
-            "UPDATE transfers SET status = ? WHERE id = ?"
-        )
-        .bind(status)
-        .bind(transfer_id.to_string())
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE transfers SET status = ? WHERE id = ?")
+            .bind(status)
+            .bind(transfer_id.to_string())
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }
 
-    pub async fn update_transfer_progress(&self, transfer_id: Uuid, end_time: Option<DateTime<Utc>>, speed: Option<f64>) -> Result<()> {
-        sqlx::query(
-            "UPDATE transfers SET end_time = ?, speed = ? WHERE id = ?"
-        )
-        .bind(end_time.map(|t| t.to_rfc3339()))
-        .bind(speed)
-        .bind(transfer_id.to_string())
-        .execute(&self.pool)
-        .await?;
+    pub async fn update_transfer_progress(
+        &self,
+        transfer_id: Uuid,
+        end_time: Option<DateTime<Utc>>,
+        speed: Option<f64>,
+    ) -> Result<()> {
+        sqlx::query("UPDATE transfers SET end_time = ?, speed = ? WHERE id = ?")
+            .bind(end_time.map(|t| t.to_rfc3339()))
+            .bind(speed)
+            .bind(transfer_id.to_string())
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }
@@ -223,12 +228,10 @@ impl TransferDatabase {
     }
 
     pub async fn get_device(&self, device_id: Uuid) -> Result<Option<DeviceRecord>> {
-        let row = sqlx::query(
-            "SELECT * FROM devices WHERE id = ?"
-        )
-        .bind(device_id.to_string())
-        .fetch_optional(&self.pool)
-        .await?;
+        let row = sqlx::query("SELECT * FROM devices WHERE id = ?")
+            .bind(device_id.to_string())
+            .fetch_optional(&self.pool)
+            .await?;
 
         if let Some(row) = row {
             Ok(Some(Self::row_to_device_record(row)?))
@@ -238,11 +241,9 @@ impl TransferDatabase {
     }
 
     pub async fn get_all_devices(&self) -> Result<Vec<DeviceRecord>> {
-        let rows = sqlx::query(
-            "SELECT * FROM devices ORDER BY last_seen DESC"
-        )
-        .fetch_all(&self.pool)
-        .await?;
+        let rows = sqlx::query("SELECT * FROM devices ORDER BY last_seen DESC")
+            .fetch_all(&self.pool)
+            .await?;
 
         let mut devices = Vec::new();
         for row in rows {
@@ -253,11 +254,10 @@ impl TransferDatabase {
     }
 
     pub async fn get_online_devices(&self) -> Result<Vec<DeviceRecord>> {
-        let rows = sqlx::query(
-            "SELECT * FROM devices WHERE is_online = true ORDER BY last_seen DESC"
-        )
-        .fetch_all(&self.pool)
-        .await?;
+        let rows =
+            sqlx::query("SELECT * FROM devices WHERE is_online = true ORDER BY last_seen DESC")
+                .fetch_all(&self.pool)
+                .await?;
 
         let mut devices = Vec::new();
         for row in rows {
@@ -268,36 +268,30 @@ impl TransferDatabase {
     }
 
     pub async fn update_device_status(&self, device_id: Uuid, is_online: bool) -> Result<()> {
-        sqlx::query(
-            "UPDATE devices SET is_online = ?, last_seen = ? WHERE id = ?"
-        )
-        .bind(is_online)
-        .bind(Utc::now().to_rfc3339())
-        .bind(device_id.to_string())
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE devices SET is_online = ?, last_seen = ? WHERE id = ?")
+            .bind(is_online)
+            .bind(Utc::now().to_rfc3339())
+            .bind(device_id.to_string())
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }
 
     pub async fn cleanup_old_records(&self, days: i64) -> Result<usize> {
         let cutoff = Utc::now() - chrono::Duration::days(days);
-        
+
         // Clean up old transfers
-        let transfer_result = sqlx::query(
-            "DELETE FROM transfers WHERE start_time < ?"
-        )
-        .bind(cutoff.to_rfc3339())
-        .execute(&self.pool)
-        .await?;
+        let transfer_result = sqlx::query("DELETE FROM transfers WHERE start_time < ?")
+            .bind(cutoff.to_rfc3339())
+            .execute(&self.pool)
+            .await?;
 
         // Clean up old devices
-        let device_result = sqlx::query(
-            "DELETE FROM devices WHERE last_seen < ?"
-        )
-        .bind(cutoff.to_rfc3339())
-        .execute(&self.pool)
-        .await?;
+        let device_result = sqlx::query("DELETE FROM devices WHERE last_seen < ?")
+            .bind(cutoff.to_rfc3339())
+            .execute(&self.pool)
+            .await?;
 
         let total_deleted = transfer_result.rows_affected() + device_result.rows_affected();
         info!("Cleaned up {} old records", total_deleted);
@@ -307,36 +301,32 @@ impl TransferDatabase {
 
     pub async fn get_transfer_stats(&self) -> Result<TransferStats> {
         // Total transfers
-        let total_transfers: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM transfers"
-        )
-        .fetch_one(&self.pool)
-        .await?;
+        let total_transfers: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM transfers")
+            .fetch_one(&self.pool)
+            .await?;
 
         // Completed transfers
-        let completed_transfers: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM transfers WHERE status = 'completed'"
-        )
-        .fetch_one(&self.pool)
-        .await?;
+        let completed_transfers: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM transfers WHERE status = 'completed'")
+                .fetch_one(&self.pool)
+                .await?;
 
         // Failed transfers
-        let failed_transfers: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM transfers WHERE status = 'failed'"
-        )
-        .fetch_one(&self.pool)
-        .await?;
+        let failed_transfers: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM transfers WHERE status = 'failed'")
+                .fetch_one(&self.pool)
+                .await?;
 
         // Total bytes transferred
         let total_bytes: i64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(size), 0) FROM transfers WHERE status = 'completed'"
+            "SELECT COALESCE(SUM(size), 0) FROM transfers WHERE status = 'completed'",
         )
         .fetch_one(&self.pool)
         .await?;
 
         // Average transfer speed
         let avg_speed: Option<f64> = sqlx::query_scalar(
-            "SELECT AVG(speed) FROM transfers WHERE speed IS NOT NULL AND status = 'completed'"
+            "SELECT AVG(speed) FROM transfers WHERE speed IS NOT NULL AND status = 'completed'",
         )
         .fetch_one(&self.pool)
         .await?;
@@ -356,9 +346,13 @@ impl TransferDatabase {
             filename: row.try_get("filename")?,
             size: row.try_get::<i64, _>("size")? as u64,
             status: row.try_get("status")?,
-            start_time: DateTime::parse_from_rfc3339(&row.try_get::<String, _>("start_time")?)?.with_timezone(&Utc),
-            end_time: row.try_get::<Option<String>, _>("end_time")?
-                .map(|s| DateTime::parse_from_rfc3339(&s).unwrap().with_timezone(&Utc)),
+            start_time: DateTime::parse_from_rfc3339(&row.try_get::<String, _>("start_time")?)?
+                .with_timezone(&Utc),
+            end_time: row.try_get::<Option<String>, _>("end_time")?.map(|s| {
+                DateTime::parse_from_rfc3339(&s)
+                    .unwrap()
+                    .with_timezone(&Utc)
+            }),
             source_device: row.try_get("source_device")?,
             target_device: row.try_get("target_device")?,
             speed: row.try_get("speed")?,
@@ -374,7 +368,8 @@ impl TransferDatabase {
             ip_address: row.try_get("ip_address")?,
             port: row.try_get::<i64, _>("port")? as u16,
             api_port: row.try_get::<i64, _>("api_port")? as u16,
-            last_seen: DateTime::parse_from_rfc3339(&row.try_get::<String, _>("last_seen")?)?.with_timezone(&Utc),
+            last_seen: DateTime::parse_from_rfc3339(&row.try_get::<String, _>("last_seen")?)?
+                .with_timezone(&Utc),
             is_online: row.try_get("is_online")?,
             capabilities: row.try_get("capabilities")?,
             version: row.try_get("version")?,
@@ -389,4 +384,4 @@ pub struct TransferStats {
     pub failed_transfers: u64,
     pub total_bytes: i64,
     pub average_speed: Option<f64>,
-} 
+}

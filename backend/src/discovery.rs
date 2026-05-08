@@ -1,16 +1,16 @@
+use crate::config::Config;
+use anyhow::Result;
+use chrono::{DateTime, Utc};
+use network_interface::NetworkInterfaceConfig;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
 use tokio::time::sleep;
-use serde::{Deserialize, Serialize};
+use tracing::{debug, error, info, warn};
 use uuid::Uuid;
-use anyhow::Result;
-use tracing::{info, error, warn, debug};
-use crate::config::Config;
-use chrono::{DateTime, Utc};
-use network_interface::NetworkInterfaceConfig;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum DeviceType {
@@ -76,25 +76,25 @@ impl DeviceDiscovery {
 
     pub async fn start_discovery(&self) -> Result<()> {
         info!("Starting device discovery...");
-        
+
         // Start mDNS service
         self.start_mdns_service().await?;
-        
+
         // Start network scanning
         self.start_network_scanning().await?;
-        
+
         // Start cleanup task
         self.start_cleanup_task().await?;
-        
+
         Ok(())
     }
 
     async fn start_mdns_service(&self) -> Result<()> {
         let service_name = "_swiftshare._tcp.local.";
         let port = self.config.api_port;
-        
+
         info!("Starting mDNS service: {} on port {}", service_name, port);
-        
+
         // For now, we'll simulate mDNS discovery
         // In a real implementation, you would use the mdns-sd crate
         tokio::spawn(async move {
@@ -103,7 +103,7 @@ impl DeviceDiscovery {
                 debug!("mDNS service running...");
             }
         });
-        
+
         Ok(())
     }
 
@@ -112,27 +112,28 @@ impl DeviceDiscovery {
         let is_scanning = self.is_scanning.clone();
         let config = self.config.clone();
         let discovery_config = self.discovery_config.clone();
-        
+
         tokio::spawn(async move {
             loop {
                 {
                     let mut scanning = is_scanning.write().await;
                     *scanning = true;
                 }
-                
-                if let Err(e) = Self::scan_local_network(&devices, &config, &discovery_config).await {
+
+                if let Err(e) = Self::scan_local_network(&devices, &config, &discovery_config).await
+                {
                     error!("Network scanning error: {}", e);
                 }
-                
+
                 {
                     let mut scanning = is_scanning.write().await;
                     *scanning = false;
                 }
-                
+
                 sleep(discovery_config.scan_interval).await;
             }
         });
-        
+
         Ok(())
     }
 
@@ -143,27 +144,22 @@ impl DeviceDiscovery {
     ) -> Result<()> {
         // Get local network interfaces
         let interfaces = network_interface::NetworkInterface::show()?;
-        
+
         for interface in interfaces {
             if let Some(addr) = interface.addr {
                 if let network_interface::Addr::V4(ipv4) = addr {
                     let network = ipv4.ip;
                     let prefix = 24; // Assume /24 network
-                    
+
                     info!("Scanning network: {}/{}", network, prefix);
-                    
+
                     // Scan subnet
-                    Self::scan_subnet(
-                        network,
-                        prefix,
-                        config.api_port,
-                        devices,
-                        discovery_config,
-                    ).await?;
+                    Self::scan_subnet(network, prefix, config.api_port, devices, discovery_config)
+                        .await?;
                 }
             }
         }
-        
+
         Ok(())
     }
 
@@ -175,19 +171,23 @@ impl DeviceDiscovery {
         discovery_config: &DiscoveryConfig,
     ) -> Result<()> {
         let network_u32 = u32::from(network);
-        let mask = if prefix == 32 { 0 } else { !((1 << (32 - prefix)) - 1) };
+        let mask = if prefix == 32 {
+            0
+        } else {
+            !((1 << (32 - prefix)) - 1)
+        };
         let network_start = network_u32 & mask;
         let network_end = network_start + (1 << (32 - prefix)) - 1;
-        
+
         let mut tasks = Vec::new();
-        
+
         for ip_u32 in network_start..=network_end {
             let ip = Ipv4Addr::from(ip_u32);
             let socket_addr = SocketAddr::new(IpAddr::V4(ip), port);
-            
+
             let devices_clone = devices.clone();
             let discovery_config_clone = discovery_config.clone();
-            
+
             let task = tokio::spawn(async move {
                 if let Ok(device) = Self::probe_device(ip, port).await {
                     let mut devices = devices_clone.write().await;
@@ -196,10 +196,10 @@ impl DeviceDiscovery {
                     }
                 }
             });
-            
+
             tasks.push(task);
         }
-        
+
         // Wait for all probes with timeout
         let timeout = tokio::time::sleep(discovery_config.timeout);
         tokio::select! {
@@ -210,18 +210,20 @@ impl DeviceDiscovery {
                 debug!("Network scan completed");
             }
         }
-        
+
         Ok(())
     }
 
     async fn probe_device(ip: Ipv4Addr, port: u16) -> Result<Device> {
         let socket_addr = SocketAddr::new(IpAddr::V4(ip), port);
-        
+
         // Try to connect to the device
         match tokio::time::timeout(
             Duration::from_millis(1000),
-            tokio::net::TcpStream::connect(socket_addr)
-        ).await {
+            tokio::net::TcpStream::connect(socket_addr),
+        )
+        .await
+        {
             Ok(Ok(_)) => {
                 // Device is reachable, try to get device info
                 if let Ok(device_info) = Self::get_device_info(ip, port).await {
@@ -230,7 +232,7 @@ impl DeviceDiscovery {
             }
             _ => {}
         }
-        
+
         // If we can't get device info, create a basic device entry
         Ok(Device {
             id: Uuid::new_v4(),
@@ -249,17 +251,17 @@ impl DeviceDiscovery {
 
     async fn get_device_info(ip: Ipv4Addr, port: u16) -> Result<Device> {
         let url = format!("http://{}:{}/api/status", ip, port);
-        
+
         let client = reqwest::Client::new();
         let response = client
             .get(&url)
             .timeout(Duration::from_secs(2))
             .send()
             .await?;
-        
+
         if response.status().is_success() {
             let status: serde_json::Value = response.json().await?;
-            
+
             return Ok(Device {
                 id: Uuid::new_v4(),
                 name: status["device_name"]
@@ -277,20 +279,20 @@ impl DeviceDiscovery {
                 version: status["version"].as_str().map(|s| s.to_string()),
             });
         }
-        
+
         Err(anyhow::anyhow!("Failed to get device info"))
     }
 
     async fn start_cleanup_task(&self) -> Result<()> {
         let devices = self.devices.clone();
-        
+
         tokio::spawn(async move {
             loop {
                 sleep(Duration::from_secs(60)).await;
-                
+
                 let cutoff = Utc::now() - chrono::Duration::minutes(5);
                 let mut devices = devices.write().await;
-                
+
                 devices.retain(|_, device| {
                     if device.last_seen < cutoff {
                         device.is_online = false;
@@ -299,7 +301,7 @@ impl DeviceDiscovery {
                 });
             }
         });
-        
+
         Ok(())
     }
 
@@ -339,11 +341,7 @@ impl DeviceDiscovery {
 
     pub async fn get_online_devices(&self) -> Vec<Device> {
         let devices = self.devices.read().await;
-        devices
-            .values()
-            .filter(|d| d.is_online)
-            .cloned()
-            .collect()
+        devices.values().filter(|d| d.is_online).cloned().collect()
     }
 
     pub async fn is_scanning(&self) -> bool {
@@ -366,4 +364,4 @@ impl DeviceDiscovery {
             version: Some(env!("CARGO_PKG_VERSION").to_string()),
         }
     }
-} 
+}

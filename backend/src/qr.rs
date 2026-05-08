@@ -1,6 +1,6 @@
-use qrcode::{QrCode, render::svg};
-use serde::{Deserialize, Serialize};
 use anyhow::Result;
+use qrcode::{render::svg, QrCode};
+use serde::{Deserialize, Serialize};
 use tracing::info;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,64 +32,68 @@ impl QRCodeManager {
     pub fn generate_connection_qr(connection_info: &ConnectionInfo) -> Result<String> {
         // Serialize connection info to JSON
         let json_data = serde_json::to_string(connection_info)?;
-        
+
         // Generate QR code
         let code = QrCode::new(json_data)?;
-        
+
         // Convert to SVG
-        let svg_string = code.render()
+        let svg_string = code
+            .render()
             .min_dimensions(200, 200)
             .dark_color(svg::Color("#000000"))
             .light_color(svg::Color("#ffffff"))
             .build();
-        
+
         Ok(svg_string)
     }
 
     pub fn generate_file_share_qr(file_info: &FileShareInfo) -> Result<String> {
         // Serialize file info to JSON
         let json_data = serde_json::to_string(file_info)?;
-        
+
         // Generate QR code
         let code = QrCode::new(json_data)?;
-        
+
         // Convert to SVG
-        let svg_string = code.render()
+        let svg_string = code
+            .render()
             .min_dimensions(200, 200)
             .dark_color(svg::Color("#000000"))
             .light_color(svg::Color("#ffffff"))
             .build();
-        
+
         Ok(svg_string)
     }
 
     pub fn generate_text_qr(text: &str) -> Result<String> {
         // Generate QR code for plain text
         let code = QrCode::new(text)?;
-        
+
         // Convert to SVG
-        let svg_string = code.render()
+        let svg_string = code
+            .render()
             .min_dimensions(200, 200)
             .dark_color(svg::Color("#000000"))
             .light_color(svg::Color("#ffffff"))
             .build();
-        
+
         Ok(svg_string)
     }
 
     pub fn generate_wifi_qr(ssid: &str, password: &str, security: &str) -> Result<String> {
         // Generate WiFi QR code format
         let wifi_data = format!("WIFI:S:{};T:{};P:{};;", ssid, security, password);
-        
+
         let code = QrCode::new(&wifi_data)?;
-        
+
         // Convert to SVG
-        let svg_string = code.render()
+        let svg_string = code
+            .render()
             .min_dimensions(200, 200)
             .dark_color(svg::Color("#000000"))
             .light_color(svg::Color("#ffffff"))
             .build();
-        
+
         Ok(svg_string)
     }
 
@@ -101,21 +105,25 @@ impl QRCodeManager {
 
     pub fn generate_qr_png(text: &str, size: u32) -> Result<Vec<u8>> {
         use image::Rgb;
-        
+
         // Generate QR code
         let code = QrCode::new(text)?;
-        
+
         // Convert to image
-        let image = code.render()
+        let image = code
+            .render()
             .min_dimensions(size, size)
             .dark_color(Rgb([0u8, 0, 0]))
             .light_color(Rgb([255u8, 255, 255]))
             .build();
-        
+
         // Convert to PNG bytes
         let mut png_bytes = Vec::new();
-        image.write_to(&mut std::io::Cursor::new(&mut png_bytes), image::ImageFormat::Png)?;
-        
+        image.write_to(
+            &mut std::io::Cursor::new(&mut png_bytes),
+            image::ImageFormat::Png,
+        )?;
+
         Ok(png_bytes)
     }
 
@@ -136,22 +144,22 @@ impl QRCodeManager {
         if let Ok(_) = Self::parse_connection_qr(qr_data) {
             return true;
         }
-        
+
         // Try to parse as file share info
         if let Ok(_) = Self::parse_file_share_qr(qr_data) {
             return true;
         }
-        
+
         // Check if it's a valid URL or plain text
         if qr_data.starts_with("http://") || qr_data.starts_with("https://") {
             return true;
         }
-        
+
         // Check if it's a WiFi QR code
         if qr_data.starts_with("WIFI:") {
             return true;
         }
-        
+
         // Assume it's valid plain text
         true
     }
@@ -213,7 +221,7 @@ mod tests {
             version: "1.0.0".to_string(),
             timestamp: chrono::Utc::now().timestamp(),
         };
-        
+
         let qr_svg = QRCodeManager::generate_connection_qr(&connection_info).unwrap();
         assert!(qr_svg.contains("svg"));
     }
@@ -229,7 +237,7 @@ mod tests {
             timestamp: chrono::Utc::now().timestamp(),
             encrypted: false,
         };
-        
+
         let qr_svg = QRCodeManager::generate_file_share_qr(&file_info).unwrap();
         assert!(qr_svg.contains("svg"));
     }
@@ -250,7 +258,9 @@ mod tests {
     #[test]
     fn test_qr_validation() {
         assert!(QRCodeManager::validate_qr_data("https://example.com"));
-        assert!(QRCodeManager::validate_qr_data("WIFI:S:MyWiFi;T:WPA;P:password;;"));
+        assert!(QRCodeManager::validate_qr_data(
+            "WIFI:S:MyWiFi;T:WPA;P:password;;"
+        ));
         assert!(QRCodeManager::validate_qr_data("Plain text"));
     }
-} 
+}

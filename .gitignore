@@ -42,11 +42,17 @@ app.*.map.json
 
 # Rust-specific
 /target/
+**/target/
 /**/*.rlib
 **/*.pdb
 # Node.js
 /desktop/node_modules/
+/web-frontend/node_modules/
+/web-frontend/dist/
 
+# Frontend build outputs
+dist/
+build/
 
 
 

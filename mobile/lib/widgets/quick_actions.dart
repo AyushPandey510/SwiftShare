@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:swiftshare_mobile/providers/transfer_provider.dart';
 import 'package:swiftshare_mobile/utils/theme.dart';
 import 'package:swiftshare_mobile/screens/qr_scanner_screen.dart';
-import 'package:swiftshare_mobile/screens/qr_display_screen.dart';
 
 class QuickActionsWidget extends StatelessWidget {
   const QuickActionsWidget({super.key});

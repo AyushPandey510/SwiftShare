@@ -254,7 +254,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                           right: 0,
                           child: Container(
                             height: 2,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
                                   Colors.transparent,
@@ -275,7 +275,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                     child: Container(
                       width: 40,
                       height: 40,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         border: Border(
                           top: BorderSide(color: AppColors.primary, width: 4),
                           left: BorderSide(color: AppColors.primary, width: 4),
@@ -289,7 +289,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                     child: Container(
                       width: 40,
                       height: 40,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         border: Border(
                           top: BorderSide(color: AppColors.primary, width: 4),
                           right: BorderSide(color: AppColors.primary, width: 4),
@@ -303,7 +303,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                     child: Container(
                       width: 40,
                       height: 40,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         border: Border(
                           bottom: BorderSide(color: AppColors.primary, width: 4),
                           left: BorderSide(color: AppColors.primary, width: 4),
@@ -317,7 +317,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                     child: Container(
                       width: 40,
                       height: 40,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         border: Border(
                           bottom: BorderSide(color: AppColors.primary, width: 4),
                           right: BorderSide(color: AppColors.primary, width: 4),

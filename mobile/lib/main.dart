@@ -168,7 +168,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.share_rounded,
                   size: 60,
                   color: Colors.white,
@@ -178,7 +178,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               const SizedBox(height: 40),
               
               // App name
-              Text(
+              const Text(
                 'SwiftShare',
                 style: TextStyle(
                   fontSize: 32,
@@ -208,7 +208,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     child: Column(
                       children: [
                         if (_isConfiguring) ...[
-                          CircularProgressIndicator(
+                          const CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                           const SizedBox(height: 16),

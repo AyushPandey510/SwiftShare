@@ -220,7 +220,7 @@ class _TransferCard extends StatelessWidget {
               LinearProgressIndicator(
                 value: transfer.progress,
                 backgroundColor: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
               const SizedBox(height: 8),
               Row(
@@ -246,7 +246,7 @@ class _TransferCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.check_circle,
                     size: 14,
                     color: AppColors.success,

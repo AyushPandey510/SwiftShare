@@ -77,7 +77,7 @@ class DevicesScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.wifi,
                 color: AppColors.primary,
                 size: 24,

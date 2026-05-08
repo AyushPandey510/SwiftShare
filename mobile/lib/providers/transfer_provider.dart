@@ -38,7 +38,7 @@ enum TransferStatus {
 }
 
 class TransferProvider extends ChangeNotifier {
-  List<TransferItem> _transfers = [];
+  final List<TransferItem> _transfers = [];
   bool _isTransferring = false;
   final FileTransferService _fileTransferService = FileTransferService();
 

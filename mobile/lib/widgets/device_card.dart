@@ -110,7 +110,7 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                         child: Center(
                           child: Text(
                             _getDeviceProvider().getDeviceTypeIcon(widget.device.type),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 28,
                               color: AppColors.primary,
                             ),

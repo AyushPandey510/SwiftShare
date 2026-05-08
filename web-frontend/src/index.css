@@ -1,0 +1,143 @@
+/* Import Inter font (similar to Figma's clean typography) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Figma-inspired Modern Design System - All colors in HSL */
+@layer base {
+  :root {
+    /* Clean white background */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+
+    /* Card styles - white with shadows */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+
+    /* Popover styles */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+
+    /* Primary - Figma's purple/blue accent */
+    --primary: 244 79% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Subtle gray */
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 0 0% 9%;
+
+    /* Muted - Light grays */
+    --muted: 240 5% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    /* Accent - Vibrant purple */
+    --accent: 252 95% 70%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Borders - Very light gray */
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 244 79% 65%;
+
+    /* Border radius - Figma style */
+    --radius: 0.75rem;
+
+    /* Custom gradient colors for floating cards */
+    --gradient-purple: 252 95% 85%;
+    --gradient-blue: 220 90% 85%;
+    --gradient-pink: 330 85% 85%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Modern utility classes */
+@layer utilities {
+  .font-inter {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* Gradient backgrounds for floating cards */
+  .gradient-card-purple {
+    background: linear-gradient(135deg, hsl(var(--gradient-purple)) 0%, hsl(var(--gradient-blue)) 100%);
+  }
+
+  .gradient-card-blue {
+    background: linear-gradient(135deg, hsl(var(--gradient-blue)) 0%, hsl(var(--gradient-purple)) 100%);
+  }
+
+  .gradient-card-pink {
+    background: linear-gradient(135deg, hsl(var(--gradient-pink)) 0%, hsl(var(--gradient-purple)) 100%);
+  }
+}
+
+/* Modern component styles */
+@layer components {
+  /* Floating gradient cards */
+  .floating-card {
+    @apply rounded-3xl shadow-lg;
+    transition: transform 0.3s ease;
+  }
+
+  .floating-card:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Feature cards */
+  .feature-card {
+    @apply bg-card rounded-2xl p-8 shadow-sm border border-border;
+    transition: all 0.3s ease;
+  }
+
+  .feature-card:hover {
+    @apply shadow-lg;
+    transform: translateY(-2px);
+  }
+
+  /* Modern button */
+  .btn-modern {
+    @apply bg-primary text-primary-foreground rounded-xl px-8 py-4 font-semibold;
+    transition: all 0.2s ease;
+  }
+
+  .btn-modern:hover {
+    @apply shadow-lg;
+    transform: scale(1.02);
+  }
+}
+
+/* Modern animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

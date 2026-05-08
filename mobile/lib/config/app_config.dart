@@ -51,7 +51,7 @@ class AppConfig {
   // Setter for backend URLs
   static void setBackendUrls(String baseUrl) {
     _backendBaseUrl = baseUrl;
-    _websocketUrl = baseUrl.replaceFirst('http://', 'ws://') + '/ws';
+    _websocketUrl = '${baseUrl.replaceFirst('http://', 'ws://')}/ws';
   }
   
   // Helper methods

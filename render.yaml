@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: swiftshare-backend
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: RUST_LOG
+        value: info
+      - key: BIND_ADDRESS
+        value: 0.0.0.0
+      - key: DOWNLOAD_DIR
+        value: /app/downloads
+      - key: DATABASE_PATH
+        value: /app/data/swiftshare.db
+      - key: PUBLIC_BASE_URL
+        sync: false

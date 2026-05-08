@@ -1,0 +1,54 @@
+# version: '3.8'  # Removed obsolete version field
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: swiftshare-backend
+    ports:
+      - "3001:3001"  # API port
+      - "3002:3002"  # Transfer port
+    volumes:
+      - swiftshare-data:/app/data:rw
+      - swiftshare-downloads:/app/downloads:rw
+    environment:
+      - RUST_LOG=info
+      - API_PORT=3001
+      - TRANSFER_PORT=3002
+      - BIND_ADDRESS=0.0.0.0
+    networks:
+      - swiftshare-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://0.0.0.0:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./web-frontend
+      dockerfile: Dockerfile
+    container_name: swiftshare-frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - swiftshare-network
+    restart: unless-stopped
+    environment:
+      - REACT_APP_API_URL=http://backend:3001
+
+networks:
+  swiftshare-network:
+    driver: bridge
+
+volumes:
+  swiftshare-data:
+    driver: local
+  swiftshare-downloads:
+    driver: local

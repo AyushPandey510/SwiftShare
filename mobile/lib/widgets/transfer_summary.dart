@@ -265,7 +265,7 @@ class _ActiveTransferItem extends StatelessWidget {
           LinearProgressIndicator(
             value: transfer.progress,
             backgroundColor: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
           const SizedBox(height: 8),
           Row(

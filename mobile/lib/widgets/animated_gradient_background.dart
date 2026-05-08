@@ -3,7 +3,7 @@ import 'dart:math';
 
 class AnimatedGradientBackground extends StatefulWidget {
   final Widget child;
-  const AnimatedGradientBackground({Key? key, required this.child}) : super(key: key);
+  const AnimatedGradientBackground({super.key, required this.child});
 
   @override
   State<AnimatedGradientBackground> createState() => _AnimatedGradientBackgroundState();
@@ -13,10 +13,10 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
   late AnimationController _controller;
   late Animation<double> _animation;
   final List<List<Color>> _gradients = [
-    [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF06B6D4)], // Indigo, Purple, Cyan
-    [Color(0xFFF59E0B), Color(0xFFEF4444), Color(0xFF6366F1)], // Amber, Red, Indigo
-    [Color(0xFF10B981), Color(0xFF06B6D4), Color(0xFF8B5CF6)], // Green, Cyan, Purple
-    [Color(0xFFF472B6), Color(0xFF6366F1), Color(0xFF06B6D4)], // Pink, Indigo, Cyan
+    [const Color(0xFF6366F1), const Color(0xFF8B5CF6), const Color(0xFF06B6D4)], // Indigo, Purple, Cyan
+    [const Color(0xFFF59E0B), const Color(0xFFEF4444), const Color(0xFF6366F1)], // Amber, Red, Indigo
+    [const Color(0xFF10B981), const Color(0xFF06B6D4), const Color(0xFF8B5CF6)], // Green, Cyan, Purple
+    [const Color(0xFFF472B6), const Color(0xFF6366F1), const Color(0xFF06B6D4)], // Pink, Indigo, Cyan
   ];
   int _currentGradient = 0;
   int _nextGradient = 1;
