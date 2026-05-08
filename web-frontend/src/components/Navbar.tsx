@@ -2,6 +2,10 @@ import { Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
+  const scrollToUpload = () => {
+    document.getElementById("quick-upload")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,11 +32,11 @@ const Navbar = () => {
             <a href="#pricing" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               Pricing
             </a>
-            <Button className="btn-modern">Get Started</Button>
+            <Button className="btn-modern" onClick={scrollToUpload}>Get Started</Button>
           </div>
 
           {/* Mobile menu button */}
-          <button className="md:hidden p-2">
+          <button className="md:hidden p-2" onClick={scrollToUpload} aria-label="Get started">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>

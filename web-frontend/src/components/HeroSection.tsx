@@ -2,6 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 
 const HeroSection = () => {
+  const scrollToUpload = () => {
+    document.getElementById("quick-upload")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <section className="relative pt-32 pb-20 px-4 overflow-hidden">
       {/* Floating background cards */}
@@ -25,10 +29,15 @@ const HeroSection = () => {
             Fast, secure, and completely free for basic sharing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="btn-modern text-lg">
+            <Button size="lg" className="btn-modern text-lg" onClick={scrollToUpload}>
               Start Sharing Now
             </Button>
-            <Button size="lg" variant="outline" className="text-lg border-2">
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-lg border-2"
+              onClick={() => document.getElementById("actions")?.scrollIntoView({ behavior: "smooth" })}
+            >
               <Download className="w-5 h-5 mr-2" />
               Download App
             </Button>

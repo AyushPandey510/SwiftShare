@@ -1,6 +1,7 @@
 import { Upload, Download, Smartphone, QrCode, LayoutDashboard, Code } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getApiBaseUrl } from "@/lib/api";
 
 const actions = [
   {
@@ -54,6 +55,28 @@ const actions = [
 ];
 
 const ActionCards = () => {
+  const handleAction = (title: string) => {
+    if (title === "Upload Files") {
+      document.getElementById("quick-upload")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    if (title === "Access Files" || title === "QR Access") {
+      const code = window.prompt("Enter your SwiftShare file code");
+      if (code?.trim()) {
+        window.open(`${getApiBaseUrl()}/api/download/${encodeURIComponent(code.trim())}`, "_blank");
+      }
+      return;
+    }
+
+    if (title === "API Access") {
+      window.open(`${getApiBaseUrl()}/health`, "_blank");
+      return;
+    }
+
+    document.getElementById("quick-upload")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <section id="actions" className="py-20 px-4 bg-secondary/30">
       <div className="max-w-7xl mx-auto">
@@ -83,7 +106,11 @@ const ActionCards = () => {
                 <p className="text-muted-foreground mb-4">
                   {action.description}
                 </p>
-                <Button variant="outline" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleAction(action.title)}
+                >
                   {action.action}
                 </Button>
               </CardContent>

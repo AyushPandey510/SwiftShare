@@ -22,6 +22,7 @@ mod transfer;
 use config::Config;
 use database::TransferDatabase;
 use discovery::DeviceDiscovery;
+use qr::QRCodeManager;
 use transfer::TransferEngine;
 
 use uuid::Uuid; // Needed for transfer_id and parsing
@@ -159,6 +160,11 @@ async fn start_api_server(state: AppState) -> Result<()> {
         .and(with_state(state.clone()))
         .and_then(get_file_by_code);
 
+    let qr_code = warp::path!("api" / "qr" / String)
+        .and(warp::get())
+        .and(with_state(state.clone()))
+        .and_then(get_qr_code);
+
     let transfers_history = warp::path!("api" / "transfers")
         .and(warp::get())
         .and(with_state(state.clone()))
@@ -186,6 +192,7 @@ async fn start_api_server(state: AppState) -> Result<()> {
         .or(ws)
         .or(download)
         .or(file_by_code)
+        .or(qr_code)
         .or(transfers_history)
         .with(cors);
 
@@ -734,5 +741,54 @@ async fn get_file_by_code(
             "success": false,
             "error": "File not found"
         })))
+    }
+}
+
+async fn get_qr_code(
+    code: String,
+    state: Arc<AppState>,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let uploaded_file = {
+        let uploaded_files = state.uploaded_files.read().await;
+        uploaded_files.get(&code).cloned()
+    };
+
+    let Some(uploaded_file) = uploaded_file else {
+        return Ok(warp::http::Response::builder()
+            .status(warp::http::StatusCode::NOT_FOUND)
+            .header("Content-Type", "application/json")
+            .body(
+                json!({
+                    "success": false,
+                    "error": "File not found"
+                })
+                .to_string(),
+            )
+            .unwrap());
+    };
+
+    let public_base_url = state.config.public_base_url();
+    let download_url = format!("{}/api/download/{}", public_base_url, uploaded_file.code);
+
+    match QRCodeManager::generate_text_qr(&download_url) {
+        Ok(svg) => Ok(warp::http::Response::builder()
+            .status(warp::http::StatusCode::OK)
+            .header("Content-Type", "image/svg+xml")
+            .body(svg)
+            .unwrap()),
+        Err(e) => {
+            error!("Failed to generate QR code for {}: {}", uploaded_file.code, e);
+            Ok(warp::http::Response::builder()
+                .status(warp::http::StatusCode::INTERNAL_SERVER_ERROR)
+                .header("Content-Type", "application/json")
+                .body(
+                    json!({
+                        "success": false,
+                        "error": "Failed to generate QR code"
+                    })
+                    .to_string(),
+                )
+                .unwrap())
+        }
     }
 }

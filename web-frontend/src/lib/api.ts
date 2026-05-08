@@ -1,8 +1,10 @@
 import { FileData } from '@/types/file';
 
-const API_BASE_URL = (
+export const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 ).replace(/\/$/, '');
+
+export const getApiBaseUrl = () => API_BASE_URL;
 
 export interface ApiResponse<T> {
   success: boolean;
