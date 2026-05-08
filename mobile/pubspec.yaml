@@ -41,7 +41,6 @@ dependencies:
   # Platform Specific
   network_info_plus: ^4.1.0
   wifi_scan: ^0.4.0
-  nearby_connections: ^3.2.0+1  # Re-enabled since NDK is now working
 
 dev_dependencies:
   flutter_test:

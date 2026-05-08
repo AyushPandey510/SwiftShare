@@ -28,7 +28,7 @@ class AppTheme {
           fontFamily: 'Poppins',
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -64,7 +64,8 @@ class AppTheme {
         ),
         filled: true,
         fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: primaryColor,
@@ -92,7 +93,7 @@ class AppTheme {
           fontFamily: 'Poppins',
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -128,7 +129,8 @@ class AppTheme {
         ),
         filled: true,
         fillColor: const Color(0xFF374151),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: primaryColor,
@@ -156,34 +158,34 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     fontFamily: 'Poppins',
   );
-  
+
   static const TextStyle heading2 = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w600,
     fontFamily: 'Poppins',
   );
-  
+
   static const TextStyle heading3 = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     fontFamily: 'Poppins',
   );
-  
+
   static const TextStyle body1 = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.normal,
     fontFamily: 'Poppins',
   );
-  
+
   static const TextStyle body2 = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.normal,
     fontFamily: 'Poppins',
   );
-  
+
   static const TextStyle caption = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.normal,
     fontFamily: 'Poppins',
   );
-} 
+}
