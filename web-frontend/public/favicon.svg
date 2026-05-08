@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="url(#grad1)"/>
+  
+  <!-- File/Document icon -->
+  <rect x="60" y="50" width="60" height="80" rx="4" fill="white" opacity="0.9"/>
+  <line x1="80" y1="65" x2="120" y2="65" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="80" y1="80" x2="120" y2="80" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="80" y1="95" x2="100" y2="95" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Arrow pointing down -->
+  <path d="M 128 130 L 128 160 M 120 152 L 128 160 L 136 152" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Second file below -->
+  <rect x="136" y="140" width="60" height="80" rx="4" fill="white" opacity="0.85"/>
+  <line x1="156" y1="155" x2="196" y2="155" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="156" y1="170" x2="196" y2="170" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="156" y1="185" x2="176" y2="185" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round"/>
+</svg>
