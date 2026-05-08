@@ -27,10 +27,27 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+// android {
+//     namespace "com.example.swiftshare_mobile"
+//     compileSdkVersion flutter.compileSdkVersion
+//     ndkVersion "25.2.9519653"  // Using the installed NDK version
+
+//     compileOptions {
+//         sourceCompatibility JavaVersion.VERSION_1_8
+//         targetCompatibility JavaVersion.VERSION_1_8
+//     }
+
+//     kotlinOptions {
+//         jvmTarget = '1.8'
+//     }
+
+//     sourceSets {
+//         main.java.srcDirs += 'src/main/kotlin'
+//     }
 android {
     namespace "com.example.swiftshare_mobile"
-    compileSdkVersion flutter.compileSdkVersion
-    ndkVersion "25.2.9519653"  // Using the installed NDK version
+    compileSdk 35
+    ndkVersion "25.2.9519653"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -41,9 +58,14 @@ android {
         jvmTarget = '1.8'
     }
 
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
+    defaultConfig {
+        applicationId "com.example.swiftshare_mobile"
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion 35
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
     }
+}
 
     defaultConfig {
         applicationId "com.example.swiftshare_mobile"
