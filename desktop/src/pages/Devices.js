@@ -9,7 +9,6 @@ const Devices = ({ showToast }) => {
     isScanning, 
     scanForDevices, 
     localIp, 
-    setLocalIp,
     loading 
   } = useStore();
 

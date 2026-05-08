@@ -42,7 +42,6 @@ const Home = ({ showToast }) => {
   };
 
   const onlineDevices = devices.filter(d => d.online);
-  const offlineDevices = devices.filter(d => !d.online);
 
   return (
     <div className="space-y-6">
