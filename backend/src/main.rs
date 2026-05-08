@@ -6,6 +6,7 @@ use serde_json::json;
 use std::convert::Infallible;
 use std::sync::Arc;
 use std::{collections::HashMap, path::PathBuf};
+use tokio::io::AsyncWriteExt;
 use tokio::sync::RwLock;
 use tracing::{error, info};
 use warp::Filter;
@@ -139,6 +140,9 @@ async fn start_api_server(state: AppState) -> Result<()> {
 
     let upload = warp::path!("api" / "upload")
         .and(warp::post())
+        .and(warp::body::content_length_limit(
+            state.config.max_file_size + 1024 * 1024,
+        ))
         .and(warp::multipart::form())
         .and(with_state(state.clone()))
         .and_then(upload_file_multipart);
@@ -263,61 +267,154 @@ async fn upload_file_multipart(
 
     info!("Starting file upload processing");
 
-    let mut filename = String::new();
-    let mut file_data = Vec::new();
+    let mut parts = form;
 
-    // Process multipart form data
-    info!("Collecting multipart form parts");
-    let parts: Vec<Result<warp::multipart::Part, warp::Error>> = form.collect().await;
-
-    for part_result in parts {
+    while let Some(part_result) = parts.next().await {
         match part_result {
             Ok(mut part) => {
                 let name = part.name().to_string();
                 info!("Processing part: {}", name);
                 match name.as_str() {
                     "file" => {
-                        // Get filename from the part's filename method
-                        if let Some(part_filename) = part.filename() {
-                            filename = part_filename.to_string();
-                            info!("File filename: {}", filename);
-                        } else {
-                            // If no filename from part, generate one
-                            filename = format!("upload_{}.bin", Uuid::new_v4());
-                            info!("Generated filename: {}", filename);
+                        let filename = part
+                            .filename()
+                            .map(sanitize_filename)
+                            .unwrap_or_else(|| format!("upload_{}.bin", Uuid::new_v4()));
+                        let content_type = part
+                            .content_type()
+                            .unwrap_or("application/octet-stream")
+                            .to_string();
+                        let file_path = state.config.download_dir.join(&filename);
+
+                        info!("Streaming upload for file: {}", filename);
+                        info!("Upload directory: {:?}", state.config.download_dir);
+
+                        if let Err(e) = tokio::fs::create_dir_all(&state.config.download_dir).await
+                        {
+                            error!("Failed to create upload directory: {}", e);
+                            return Ok(warp::reply::json(&json!({
+                                "success": false,
+                                "error": "Failed to create upload directory"
+                            })));
                         }
 
-                        // Collect file data
-                        info!("Starting to collect file data");
+                        let mut file = match tokio::fs::File::create(&file_path).await {
+                            Ok(file) => file,
+                            Err(e) => {
+                                error!("Error creating file: {}", e);
+                                return Ok(warp::reply::json(&json!({
+                                    "success": false,
+                                    "error": "Failed to save file"
+                                })));
+                            }
+                        };
+
+                        let mut size = 0usize;
                         while let Some(chunk_result) = part.data().await {
-                            match chunk_result {
-                                Ok(chunk_data) => {
-                                    let chunk_size = chunk_data.chunk().len();
-                                    file_data.extend_from_slice(chunk_data.chunk());
-                                    info!(
-                                        "Collected chunk of {} bytes, total so far: {}",
-                                        chunk_size,
-                                        file_data.len()
-                                    );
-                                }
+                            let chunk_data = match chunk_result {
+                                Ok(chunk_data) => chunk_data,
                                 Err(e) => {
                                     error!("Failed to read file chunk: {}", e);
+                                    let _ = tokio::fs::remove_file(&file_path).await;
                                     return Ok(warp::reply::json(&json!({
                                         "success": false,
                                         "error": "Failed to read file data"
                                     })));
                                 }
+                            };
+
+                            let chunk = chunk_data.chunk();
+                            size += chunk.len();
+
+                            if size as u64 > state.config.max_file_size {
+                                error!(
+                                    "Upload exceeded max file size: {} > {}",
+                                    size, state.config.max_file_size
+                                );
+                                let _ = tokio::fs::remove_file(&file_path).await;
+                                return Ok(warp::reply::json(&json!({
+                                    "success": false,
+                                    "error": "File too large"
+                                })));
+                            }
+
+                            if let Err(e) = file.write_all(chunk).await {
+                                error!("Error writing file chunk: {}", e);
+                                let _ = tokio::fs::remove_file(&file_path).await;
+                                return Ok(warp::reply::json(&json!({
+                                    "success": false,
+                                    "error": "Failed to save file"
+                                })));
                             }
                         }
-                        info!(
-                            "Finished collecting file data, total size: {}",
-                            file_data.len()
-                        );
+
+                        if let Err(e) = file.flush().await {
+                            error!("Error flushing file: {}", e);
+                            let _ = tokio::fs::remove_file(&file_path).await;
+                            return Ok(warp::reply::json(&json!({
+                                "success": false,
+                                "error": "Failed to save file"
+                            })));
+                        }
+
+                        if size == 0 {
+                            info!("No file data provided");
+                            let _ = tokio::fs::remove_file(&file_path).await;
+                            return Ok(warp::reply::json(&json!({
+                                "success": false,
+                                "error": "No file provided"
+                            })));
+                        }
+
+                        let file_code = format!("{:06}", rand::random::<u32>() % 1000000);
+                        let file_id = Uuid::new_v4().to_string();
+
+                        info!("File uploaded successfully: {} ({} bytes)", filename, size);
+
+                        let public_base_url = state.config.public_base_url();
+                        let uploaded_at = Utc::now();
+                        let expires_at = uploaded_at + chrono::Duration::hours(24);
+                        let uploaded_file = UploadedFile {
+                            id: file_id,
+                            code: file_code.clone(),
+                            filename,
+                            size,
+                            content_type,
+                            path: file_path,
+                            uploaded_at: uploaded_at.to_rfc3339(),
+                            expires_at: expires_at.to_rfc3339(),
+                        };
+
+                        state
+                            .uploaded_files
+                            .write()
+                            .await
+                            .insert(file_code, uploaded_file.clone());
+
+                        let file_payload = json!({
+                            "id": &uploaded_file.id,
+                            "code": &uploaded_file.code,
+                            "filename": &uploaded_file.filename,
+                            "size": uploaded_file.size,
+                            "type": &uploaded_file.content_type,
+                            "url": format!("{}/api/download/{}", public_base_url, &uploaded_file.code),
+                            "qrUrl": format!("{}/api/qr/{}", public_base_url, &uploaded_file.code),
+                            "expiresAt": &uploaded_file.expires_at,
+                            "downloadCount": 0,
+                            "maxDownloads": 1,
+                            "uploadedAt": &uploaded_file.uploaded_at,
+                            "uploadedBy": "guest"
+                        });
+
+                        return Ok(warp::reply::json(&json!({
+                            "success": true,
+                            "data": file_payload.clone(),
+                            "file": file_payload
+                        })));
                     }
                     _ => {
-                        // Consume other fields to avoid hanging
                         info!("Consuming non-file part: {}", name);
-                        while let Some(_) = part.data().await {}
+                        while part.data().await.is_some() {}
                     }
                 }
             }
@@ -331,89 +428,30 @@ async fn upload_file_multipart(
         }
     }
 
-    if !file_data.is_empty() {
-        info!("File data is not empty, size: {}", file_data.len());
-        let file_path = state.config.download_dir.join(&filename);
-        let size = file_data.len();
+    info!("No file part provided");
+    Ok(warp::reply::json(&json!({
+        "success": false,
+        "error": "No file provided"
+    })))
+}
 
-        info!("Upload directory: {:?}", state.config.download_dir);
-        info!("File path: {:?}", file_path);
+fn sanitize_filename(filename: &str) -> String {
+    let candidate = std::path::Path::new(filename)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("upload.bin")
+        .trim();
 
-        // Ensure upload directory exists
-        if let Err(e) = tokio::fs::create_dir_all(&state.config.download_dir).await {
-            error!("Failed to create upload directory: {}", e);
-            return Ok(warp::reply::json(&json!({
-                "success": false,
-                "error": "Failed to create upload directory"
-            })));
-        }
-
-        // Save file
-        info!("Attempting to save file");
-        if let Err(e) = tokio::fs::write(&file_path, file_data).await {
-            error!("Error saving file: {}", e);
-            return Ok(warp::reply::json(&json!({
-                "success": false,
-                "error": "Failed to save file"
-            })));
-        }
-
-        // Generate file code (6-digit number)
-        let file_code = format!("{:06}", rand::random::<u32>() % 1000000);
-        let file_id = Uuid::new_v4().to_string();
-
-        info!("File uploaded successfully: {} ({} bytes)", filename, size);
-        info!("Returning success response");
-
-        let public_base_url = state.config.public_base_url();
-        let uploaded_at = Utc::now();
-        let expires_at = uploaded_at + chrono::Duration::hours(24);
-        let uploaded_file = UploadedFile {
-            id: file_id,
-            code: file_code.clone(),
-            filename,
-            size,
-            content_type: "application/octet-stream".to_string(),
-            path: file_path,
-            uploaded_at: uploaded_at.to_rfc3339(),
-            expires_at: expires_at.to_rfc3339(),
-        };
-
-        state
-            .uploaded_files
-            .write()
-            .await
-            .insert(file_code, uploaded_file.clone());
-
-        let file_payload = json!({
-            "id": &uploaded_file.id,
-            "code": &uploaded_file.code,
-            "filename": &uploaded_file.filename,
-            "size": uploaded_file.size,
-            "type": &uploaded_file.content_type,
-            "url": format!("{}/api/download/{}", public_base_url, &uploaded_file.code),
-            "qrUrl": format!("{}/api/qr/{}", public_base_url, &uploaded_file.code),
-            "expiresAt": &uploaded_file.expires_at,
-            "downloadCount": 0,
-            "maxDownloads": 1,
-            "uploadedAt": &uploaded_file.uploaded_at,
-            "uploadedBy": "guest"
-        });
-
-        let response = json!({
-            "success": true,
-            "data": file_payload.clone(),
-            "file": file_payload
-        });
-
-        info!("Response prepared: {}", response);
-        Ok(warp::reply::json(&response))
+    if candidate.is_empty() {
+        format!("upload_{}.bin", Uuid::new_v4())
     } else {
-        info!("No file data provided");
-        Ok(warp::reply::json(&json!({
-            "success": false,
-            "error": "No file provided"
-        })))
+        candidate
+            .chars()
+            .map(|c| match c {
+                '/' | '\\' | '\0' => '_',
+                _ => c,
+            })
+            .collect()
     }
 }
 
@@ -660,6 +698,8 @@ async fn download_file(
     code: String,
     state: Arc<AppState>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
+    use tokio_util::codec::{BytesCodec, FramedRead};
+
     let uploaded_file = {
         let uploaded_files = state.uploaded_files.read().await;
         uploaded_files.get(&code).cloned()
@@ -669,40 +709,43 @@ async fn download_file(
         return Ok(warp::http::Response::builder()
             .status(warp::http::StatusCode::NOT_FOUND)
             .header("Content-Type", "application/json")
-            .body(
+            .body(warp::hyper::Body::from(
                 json!({
                     "success": false,
                     "error": "File not found"
                 })
-                .to_string()
-                .into_bytes(),
-            )
+                .to_string(),
+            ))
             .unwrap());
     };
 
-    match tokio::fs::read(&uploaded_file.path).await {
-        Ok(contents) => Ok(warp::http::Response::builder()
-            .status(warp::http::StatusCode::OK)
-            .header("Content-Type", uploaded_file.content_type.as_str())
-            .header(
-                "Content-Disposition",
-                format!("attachment; filename=\"{}\"", uploaded_file.filename),
-            )
-            .body(contents)
-            .unwrap()),
+    match tokio::fs::File::open(&uploaded_file.path).await {
+        Ok(file) => {
+            let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|bytes| bytes.freeze());
+            let body = warp::hyper::Body::wrap_stream(stream);
+
+            Ok(warp::http::Response::builder()
+                .status(warp::http::StatusCode::OK)
+                .header("Content-Type", uploaded_file.content_type.as_str())
+                .header(
+                    "Content-Disposition",
+                    format!("attachment; filename=\"{}\"", uploaded_file.filename),
+                )
+                .body(body)
+                .unwrap())
+        }
         Err(e) => {
             error!("Failed to read uploaded file {}: {}", uploaded_file.code, e);
             Ok(warp::http::Response::builder()
                 .status(warp::http::StatusCode::NOT_FOUND)
                 .header("Content-Type", "application/json")
-                .body(
+                .body(warp::hyper::Body::from(
                     json!({
                         "success": false,
                         "error": "File not found"
                     })
-                    .to_string()
-                    .into_bytes(),
-                )
+                    .to_string(),
+                ))
                 .unwrap())
         }
     }
@@ -777,7 +820,10 @@ async fn get_qr_code(
             .body(svg)
             .unwrap()),
         Err(e) => {
-            error!("Failed to generate QR code for {}: {}", uploaded_file.code, e);
+            error!(
+                "Failed to generate QR code for {}: {}",
+                uploaded_file.code, e
+            );
             Ok(warp::http::Response::builder()
                 .status(warp::http::StatusCode::INTERNAL_SERVER_ERROR)
                 .header("Content-Type", "application/json")

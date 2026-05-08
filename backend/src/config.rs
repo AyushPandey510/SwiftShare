@@ -107,6 +107,18 @@ impl Config {
         if let Ok(encryption_key) = env::var("ENCRYPTION_KEY") {
             self.encryption_key = encryption_key;
         }
+
+        if let Ok(max_file_size) = env::var("MAX_FILE_SIZE") {
+            if let Ok(max_file_size) = max_file_size.parse::<u64>() {
+                self.max_file_size = max_file_size;
+            }
+        }
+
+        if let Ok(buffer_size) = env::var("BUFFER_SIZE") {
+            if let Ok(buffer_size) = buffer_size.parse::<usize>() {
+                self.buffer_size = buffer_size;
+            }
+        }
     }
 
     pub fn public_base_url(&self) -> String {
