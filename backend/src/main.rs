@@ -284,7 +284,22 @@ async fn upload_file_multipart(
                             .content_type()
                             .unwrap_or("application/octet-stream")
                             .to_string();
-                        let file_path = state.config.download_dir.join(&filename);
+
+                        let file_code = loop {
+                            let code = format!("{:06}", rand::random::<u32>() % 1000000);
+                            let candidate_path = state
+                                .config
+                                .download_dir
+                                .join(format!("{}_{}", &code, &filename));
+                            if tokio::fs::metadata(&candidate_path).await.is_err() {
+                                break code;
+                            }
+                        };
+
+                        let file_path = state
+                            .config
+                            .download_dir
+                            .join(format!("{}_{}", &file_code, &filename));
 
                         info!("Streaming upload for file: {}", filename);
                         info!("Upload directory: {:?}", state.config.download_dir);
@@ -366,7 +381,6 @@ async fn upload_file_multipart(
                             })));
                         }
 
-                        let file_code = format!("{:06}", rand::random::<u32>() % 1000000);
                         let file_id = Uuid::new_v4().to_string();
 
                         info!("File uploaded successfully: {} ({} bytes)", filename, size);
@@ -453,6 +467,51 @@ fn sanitize_filename(filename: &str) -> String {
             })
             .collect()
     }
+}
+
+async fn locate_uploaded_file_by_code(
+    state: &AppState,
+    code: &str,
+) -> Option<UploadedFile> {
+    {
+        let uploaded_files = state.uploaded_files.read().await;
+        if let Some(uploaded_file) = uploaded_files.get(code).cloned() {
+            return Some(uploaded_file);
+        }
+    }
+
+    let prefix = format!("{}_", code);
+    if let Ok(mut dir) = tokio::fs::read_dir(&state.config.download_dir).await {
+        while let Ok(Some(entry)) = dir.next_entry().await {
+            let file_name = entry.file_name().to_string_lossy().to_string();
+            if file_name.starts_with(&prefix) {
+                let file_path = entry.path();
+                if let Ok(metadata) = tokio::fs::metadata(&file_path).await {
+                    let filename = file_name[prefix.len()..].to_string();
+                    let found = UploadedFile {
+                        id: Uuid::new_v4().to_string(),
+                        code: code.to_string(),
+                        filename: filename.clone(),
+                        size: metadata.len() as usize,
+                        content_type: "application/octet-stream".to_string(),
+                        path: file_path.clone(),
+                        uploaded_at: Utc::now().to_rfc3339(),
+                        expires_at: Utc::now().to_rfc3339(),
+                    };
+
+                    state
+                        .uploaded_files
+                        .write()
+                        .await
+                        .insert(code.to_string(), found.clone());
+
+                    return Some(found);
+                }
+            }
+        }
+    }
+
+    None
 }
 
 async fn get_transfers_history(state: Arc<AppState>) -> Result<impl warp::Reply, warp::Rejection> {
@@ -700,10 +759,7 @@ async fn download_file(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     use tokio_util::codec::{BytesCodec, FramedRead};
 
-    let uploaded_file = {
-        let uploaded_files = state.uploaded_files.read().await;
-        uploaded_files.get(&code).cloned()
-    };
+    let uploaded_file = locate_uploaded_file_by_code(&state, &code).await;
 
     let Some(uploaded_file) = uploaded_file else {
         return Ok(warp::http::Response::builder()
@@ -755,10 +811,7 @@ async fn get_file_by_code(
     code: String,
     state: Arc<AppState>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let uploaded_file = {
-        let uploaded_files = state.uploaded_files.read().await;
-        uploaded_files.get(&code).cloned()
-    };
+    let uploaded_file = locate_uploaded_file_by_code(&state, &code).await;
 
     if let Some(uploaded_file) = uploaded_file {
         let public_base_url = state.config.public_base_url();
@@ -791,10 +844,7 @@ async fn get_qr_code(
     code: String,
     state: Arc<AppState>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let uploaded_file = {
-        let uploaded_files = state.uploaded_files.read().await;
-        uploaded_files.get(&code).cloned()
-    };
+    let uploaded_file = locate_uploaded_file_by_code(&state, &code).await;
 
     let Some(uploaded_file) = uploaded_file else {
         return Ok(warp::http::Response::builder()
