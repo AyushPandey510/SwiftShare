@@ -44,7 +44,6 @@ const NetworkStatus = () => {
         </div>
         <div className="flex items-center gap-2 mb-2">
           <p className="text-sm font-medium text-foreground/90">
-            {getApiBaseUrl()}
           </p>
         </div>
         <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mt-2 ${statusClass}`}>

@@ -5,7 +5,7 @@ import QuickUpload from "@/components/QuickUpload";
 import FeaturesSection from "@/components/FeaturesSection";
 import HowItWorks from "@/components/HowItWorks";
 import TransferHistory from "@/components/TransferHistory";
-import NetworkStatus from "@/components/NetworkStatus";
+// NetworkStatus removed from main page per request
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -18,7 +18,6 @@ const Index = () => {
       <FeaturesSection />
       <HowItWorks />
       <TransferHistory />
-      <NetworkStatus />
       <Footer />
     </div>
   );

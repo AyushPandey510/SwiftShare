@@ -1,4 +1,4 @@
-import { Share2, Twitter, Github, MessageCircle } from "lucide-react";
+import { Share2, Twitter, Github, MessageCircle, Instagram, Linkedin } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -17,14 +17,17 @@ const Footer = () => {
               Making file sharing as easy as passing notes in class. Fast, secure, and reliable file transfer for everyone.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+              <a href="https://x.com/AyushPande28353" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors" aria-label="X">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+              <a href="https://github.com/AyushPandey510" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors" aria-label="GitHub">
                 <Github className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
-                <MessageCircle className="w-5 h-5" />
+              <a href="https://www.instagram.com/ayushpandey_5/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors" aria-label="Instagram">
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a href="https://www.linkedin.com/in/ayush-pandey-097027242/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors" aria-label="LinkedIn">
+                <Linkedin className="w-5 h-5" />
               </a>
             </div>
           </div>

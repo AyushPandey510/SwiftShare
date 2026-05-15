@@ -1,3 +1,8 @@
+User-agent: *
+Allow: /
+
+# Point to sitemap
+Sitemap: https://swift-share-tau.vercel.app/sitemap.xml
 User-agent: Googlebot
 Allow: /
 
