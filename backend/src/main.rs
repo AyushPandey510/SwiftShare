@@ -1,7 +1,8 @@
 use anyhow::Result;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt, TryStreamExt};
+use rand::{distributions::Alphanumeric, Rng};
 use serde_json::json;
 use std::convert::Infallible;
 use std::sync::Arc;
@@ -40,6 +41,8 @@ struct UploadedFile {
     path: PathBuf,
     uploaded_at: String,
     expires_at: String,
+    download_count: u32,
+    max_downloads: u32,
 }
 
 #[derive(Clone)]
@@ -129,6 +132,9 @@ async fn start_api_server(state: AppState) -> Result<()> {
 
     let transfer = warp::path!("api" / "transfer")
         .and(warp::post())
+        .and(warp::body::content_length_limit(
+            state.config.max_file_size + 1024 * 1024,
+        ))
         .and(warp::multipart::form())
         .and(with_state(state.clone()))
         .and_then(create_transfer_multipart);
@@ -174,8 +180,9 @@ async fn start_api_server(state: AppState) -> Result<()> {
         .and(with_state(state.clone()))
         .and_then(get_transfers_history);
 
+    let allowed_origins = state.config.allowed_origins();
     let cors = warp::cors()
-        .allow_any_origin()
+        .allow_origins(allowed_origins.iter().map(String::as_str))
         .allow_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
         .allow_headers(vec![
             "Content-Type",
@@ -286,12 +293,13 @@ async fn upload_file_multipart(
                             .to_string();
 
                         let file_code = loop {
-                            let code = format!("{:06}", rand::random::<u32>() % 1000000);
+                            let code = generate_file_code();
                             let candidate_path = state
                                 .config
                                 .download_dir
                                 .join(format!("{}_{}", &code, &filename));
-                            if tokio::fs::metadata(&candidate_path).await.is_err() {
+                            let code_in_use = state.uploaded_files.read().await.contains_key(&code);
+                            if !code_in_use && tokio::fs::metadata(&candidate_path).await.is_err() {
                                 break code;
                             }
                         };
@@ -397,6 +405,8 @@ async fn upload_file_multipart(
                             path: file_path,
                             uploaded_at: uploaded_at.to_rfc3339(),
                             expires_at: expires_at.to_rfc3339(),
+                            download_count: 0,
+                            max_downloads: 1,
                         };
 
                         state
@@ -414,8 +424,8 @@ async fn upload_file_multipart(
                             "url": format!("{}/api/download/{}", public_base_url, &uploaded_file.code),
                             "qrUrl": format!("{}/api/qr/{}", public_base_url, &uploaded_file.code),
                             "expiresAt": &uploaded_file.expires_at,
-                            "downloadCount": 0,
-                            "maxDownloads": 1,
+                            "downloadCount": uploaded_file.download_count,
+                            "maxDownloads": uploaded_file.max_downloads,
                             "uploadedAt": &uploaded_file.uploaded_at,
                             "uploadedBy": "guest"
                         });
@@ -456,20 +466,60 @@ fn sanitize_filename(filename: &str) -> String {
         .unwrap_or("upload.bin")
         .trim();
 
-    if candidate.is_empty() {
+    let sanitized: String = candidate
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '.' || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>()
+        .trim_matches('.')
+        .to_string();
+
+    if sanitized.is_empty() {
         format!("upload_{}.bin", Uuid::new_v4())
     } else {
-        candidate
-            .chars()
-            .map(|c| match c {
-                '/' | '\\' | '\0' => '_',
-                _ => c,
-            })
-            .collect()
+        sanitized
     }
 }
 
+fn generate_file_code() -> String {
+    rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .map(char::from)
+        .map(|c| c.to_ascii_uppercase())
+        .filter(|c| c.is_ascii_alphanumeric())
+        .take(6)
+        .collect()
+}
+
+fn is_valid_file_code(code: &str) -> bool {
+    code.len() == 6 && code.chars().all(|c| c.is_ascii_alphanumeric())
+}
+
+fn uploaded_file_expired(uploaded_file: &UploadedFile) -> bool {
+    DateTime::parse_from_rfc3339(&uploaded_file.expires_at)
+        .map(|expires_at| expires_at.with_timezone(&Utc) <= Utc::now())
+        .unwrap_or(true)
+}
+
+async fn remove_uploaded_file(state: &AppState, uploaded_file: &UploadedFile) {
+    state
+        .uploaded_files
+        .write()
+        .await
+        .remove(&uploaded_file.code);
+    let _ = tokio::fs::remove_file(&uploaded_file.path).await;
+}
+
 async fn locate_uploaded_file_by_code(state: &AppState, code: &str) -> Option<UploadedFile> {
+    if !is_valid_file_code(code) {
+        return None;
+    }
+
     {
         let uploaded_files = state.uploaded_files.read().await;
         if let Some(uploaded_file) = uploaded_files.get(code).cloned() {
@@ -493,7 +543,9 @@ async fn locate_uploaded_file_by_code(state: &AppState, code: &str) -> Option<Up
                         content_type: "application/octet-stream".to_string(),
                         path: file_path.clone(),
                         uploaded_at: Utc::now().to_rfc3339(),
-                        expires_at: Utc::now().to_rfc3339(),
+                        expires_at: (Utc::now() + chrono::Duration::hours(24)).to_rfc3339(),
+                        download_count: 0,
+                        max_downloads: 1,
                     };
 
                     state
@@ -631,6 +683,7 @@ async fn create_transfer_multipart(
     if transfer_id.is_empty() {
         transfer_id = Uuid::new_v4().to_string();
     }
+    file_name = sanitize_filename(&file_name);
 
     info!(
         "Received multipart transfer request: {} -> {}",
@@ -666,7 +719,8 @@ async fn create_transfer_multipart(
         }
 
         // Save file
-        match save_file_from_multipart(&mut file_part, &file_path).await {
+        match save_file_from_multipart(&mut file_part, &file_path, state.config.max_file_size).await
+        {
             Ok(_) => {
                 // Update transfer status to completed
                 let mut progress_completed = progress.clone();
@@ -686,6 +740,7 @@ async fn create_transfer_multipart(
             }
             Err(e) => {
                 error!("Failed to save file: {}", e);
+                let _ = tokio::fs::remove_file(&file_path).await;
 
                 // Update transfer status to failed
                 let mut progress_failed = progress.clone();
@@ -730,15 +785,22 @@ async fn create_transfer_multipart(
 async fn save_file_from_multipart(
     file_part: &mut warp::multipart::Part,
     file_path: &std::path::Path,
+    max_file_size: u64,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     use bytes::Buf;
     use tokio::io::AsyncWriteExt;
 
     let mut file = tokio::fs::File::create(file_path).await?;
+    let mut size = 0u64;
 
     // Read all data from the part
     while let Some(Ok(data)) = file_part.data().await {
-        file.write_all(data.chunk()).await?;
+        let chunk = data.chunk();
+        size += chunk.len() as u64;
+        if size > max_file_size {
+            return Err("File too large".into());
+        }
+        file.write_all(chunk).await?;
     }
 
     file.flush().await?;
@@ -772,14 +834,52 @@ async fn download_file(
             .unwrap());
     };
 
+    if uploaded_file_expired(&uploaded_file) {
+        remove_uploaded_file(&state, &uploaded_file).await;
+        return Ok(warp::http::Response::builder()
+            .status(warp::http::StatusCode::GONE)
+            .header("Content-Type", "application/json")
+            .body(warp::hyper::Body::from(
+                json!({
+                    "success": false,
+                    "error": "File expired"
+                })
+                .to_string(),
+            ))
+            .unwrap());
+    }
+
+    if uploaded_file.download_count >= uploaded_file.max_downloads {
+        return Ok(warp::http::Response::builder()
+            .status(warp::http::StatusCode::GONE)
+            .header("Content-Type", "application/json")
+            .body(warp::hyper::Body::from(
+                json!({
+                    "success": false,
+                    "error": "Download limit reached"
+                })
+                .to_string(),
+            ))
+            .unwrap());
+    }
+
     match tokio::fs::File::open(&uploaded_file.path).await {
         Ok(file) => {
+            {
+                let mut uploaded_files = state.uploaded_files.write().await;
+                if let Some(stored_file) = uploaded_files.get_mut(&uploaded_file.code) {
+                    stored_file.download_count += 1;
+                }
+            }
+
             let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|bytes| bytes.freeze());
             let body = warp::hyper::Body::wrap_stream(stream);
 
             Ok(warp::http::Response::builder()
                 .status(warp::http::StatusCode::OK)
                 .header("Content-Type", uploaded_file.content_type.as_str())
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Cache-Control", "no-store")
                 .header(
                     "Content-Disposition",
                     format!("attachment; filename=\"{}\"", uploaded_file.filename),
@@ -811,6 +911,14 @@ async fn get_file_by_code(
     let uploaded_file = locate_uploaded_file_by_code(&state, &code).await;
 
     if let Some(uploaded_file) = uploaded_file {
+        if uploaded_file_expired(&uploaded_file) {
+            remove_uploaded_file(&state, &uploaded_file).await;
+            return Ok(warp::reply::json(&json!({
+                "success": false,
+                "error": "File expired"
+            })));
+        }
+
         let public_base_url = state.config.public_base_url();
         Ok(warp::reply::json(&json!({
             "success": true,
@@ -823,8 +931,8 @@ async fn get_file_by_code(
                 "url": format!("{}/api/download/{}", public_base_url, code),
                 "qrUrl": format!("{}/api/qr/{}", public_base_url, code),
                 "expiresAt": &uploaded_file.expires_at,
-                "downloadCount": 0,
-                "maxDownloads": 1,
+                "downloadCount": uploaded_file.download_count,
+                "maxDownloads": uploaded_file.max_downloads,
                 "uploadedAt": &uploaded_file.uploaded_at,
                 "uploadedBy": "guest"
             }
@@ -856,6 +964,21 @@ async fn get_qr_code(
             )
             .unwrap());
     };
+
+    if uploaded_file_expired(&uploaded_file) {
+        remove_uploaded_file(&state, &uploaded_file).await;
+        return Ok(warp::http::Response::builder()
+            .status(warp::http::StatusCode::GONE)
+            .header("Content-Type", "application/json")
+            .body(
+                json!({
+                    "success": false,
+                    "error": "File expired"
+                })
+                .to_string(),
+            )
+            .unwrap());
+    }
 
     let public_base_url = state.config.public_base_url();
     let download_url = format!("{}/api/download/{}", public_base_url, uploaded_file.code);

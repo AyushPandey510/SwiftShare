@@ -128,10 +128,50 @@ impl Config {
             .to_string()
     }
 
+    pub fn allowed_origins(&self) -> Vec<String> {
+        if let Ok(origins) = env::var("CORS_ALLOWED_ORIGINS") {
+            let parsed: Vec<String> = origins
+                .split(',')
+                .map(str::trim)
+                .filter(|origin| !origin.is_empty())
+                .map(|origin| origin.trim_end_matches('/').to_string())
+                .collect();
+
+            if !parsed.is_empty() {
+                return parsed;
+            }
+        }
+
+        vec![
+            self.public_base_url(),
+            "http://localhost:5173".to_string(),
+            "http://localhost:3000".to_string(),
+            "http://localhost:8080".to_string(),
+            "http://127.0.0.1:5173".to_string(),
+            "http://127.0.0.1:3000".to_string(),
+            "http://127.0.0.1:8080".to_string(),
+        ]
+    }
+
     fn generate_encryption_key() -> String {
         use rand::Rng;
         let mut rng = rand::thread_rng();
         let key: [u8; 32] = rng.gen();
         general_purpose::STANDARD.encode(key)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Config;
+
+    #[test]
+    fn default_allowed_origins_include_frontend_ports() {
+        let config = Config::default();
+        let origins = config.allowed_origins();
+
+        assert!(origins.contains(&"http://localhost:8080".to_string()));
+        assert!(origins.contains(&"http://127.0.0.1:8080".to_string()));
+        assert!(origins.contains(&"http://localhost:5173".to_string()));
     }
 }

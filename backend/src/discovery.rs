@@ -1,12 +1,15 @@
 use crate::config::Config;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
+use futures::stream::{self, StreamExt};
 use network_interface::NetworkInterfaceConfig;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::env;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::path::Path;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tokio::sync::RwLock;
 use tokio::time::sleep;
 use tracing::{debug, error, info, warn};
@@ -108,6 +111,13 @@ impl DeviceDiscovery {
     }
 
     async fn start_network_scanning(&self) -> Result<()> {
+        if Self::running_in_container() && !Self::scan_in_container_enabled() {
+            info!(
+                "Skipping active network scan in container; set SWIFTSHARE_SCAN_IN_CONTAINER=true to enable"
+            );
+            return Ok(());
+        }
+
         let devices = self.devices.clone();
         let is_scanning = self.is_scanning.clone();
         let config = self.config.clone();
@@ -144,20 +154,47 @@ impl DeviceDiscovery {
     ) -> Result<()> {
         // Get local network interfaces
         let interfaces = network_interface::NetworkInterface::show()?;
+        let mut scanned_any = false;
 
         for interface in interfaces {
             if let Some(addr) = interface.addr {
                 if let network_interface::Addr::V4(ipv4) = addr {
-                    let network = ipv4.ip;
-                    let prefix = 24; // Assume /24 network
+                    let local_ip = ipv4.ip;
+                    if Self::should_skip_interface(&interface.name, local_ip) {
+                        debug!(
+                            "Skipping interface {} with address {}",
+                            interface.name, local_ip
+                        );
+                        continue;
+                    }
 
-                    info!("Scanning network: {}/{}", network, prefix);
+                    let prefix = ipv4
+                        .netmask
+                        .and_then(Self::ipv4_prefix_len)
+                        .unwrap_or(24);
 
-                    // Scan subnet
-                    Self::scan_subnet(network, prefix, config.api_port, devices, discovery_config)
+                    if !(16..=30).contains(&prefix) {
+                        debug!(
+                            "Skipping interface {} with unsupported prefix /{}",
+                            interface.name, prefix
+                        );
+                        continue;
+                    }
+
+                    scanned_any = true;
+                    info!(
+                        "Scanning network interface {}: {}/{}",
+                        interface.name, local_ip, prefix
+                    );
+
+                    Self::scan_subnet(local_ip, prefix, config.api_port, devices, discovery_config)
                         .await?;
                 }
             }
+        }
+
+        if !scanned_any {
+            debug!("No eligible network interfaces found for active discovery scan");
         }
 
         Ok(())
@@ -170,44 +207,47 @@ impl DeviceDiscovery {
         devices: &Arc<RwLock<HashMap<Uuid, Device>>>,
         discovery_config: &DiscoveryConfig,
     ) -> Result<()> {
-        let network_u32 = u32::from(network);
+        let local_ip_u32 = u32::from(network);
         let mask = if prefix == 32 {
-            0
+            u32::MAX
         } else {
             !((1 << (32 - prefix)) - 1)
         };
-        let network_start = network_u32 & mask;
+        let network_start = local_ip_u32 & mask;
         let network_end = network_start + (1 << (32 - prefix)) - 1;
 
-        let mut tasks = Vec::new();
-
-        for ip_u32 in network_start..=network_end {
+        let candidates = ((network_start + 1)..network_end).filter_map(|ip_u32| {
+            if ip_u32 == local_ip_u32 {
+                return None;
+            }
             let ip = Ipv4Addr::from(ip_u32);
-            let socket_addr = SocketAddr::new(IpAddr::V4(ip), port);
+            if Self::should_skip_ip(ip) {
+                None
+            } else {
+                Some(ip)
+            }
+        });
 
-            let devices_clone = devices.clone();
-            let discovery_config_clone = discovery_config.clone();
-
-            let task = tokio::spawn(async move {
-                if let Ok(device) = Self::probe_device(ip, port).await {
-                    let mut devices = devices_clone.write().await;
-                    if devices.len() < discovery_config_clone.max_devices {
-                        devices.insert(device.id, device);
+        let scan = stream::iter(candidates)
+            .for_each_concurrent(64, |ip| {
+                let devices_clone = devices.clone();
+                let discovery_config_clone = discovery_config.clone();
+                async move {
+                    if let Ok(device) = Self::probe_device(ip, port).await {
+                        let mut devices = devices_clone.write().await;
+                        if devices.len() < discovery_config_clone.max_devices {
+                            devices.insert(device.id, device);
+                        }
                     }
                 }
             });
 
-            tasks.push(task);
-        }
-
-        // Wait for all probes with timeout
-        let timeout = tokio::time::sleep(discovery_config.timeout);
-        tokio::select! {
-            _ = timeout => {
-                warn!("Network scan timeout");
-            }
-            _ = futures::future::join_all(tasks) => {
+        match tokio::time::timeout(discovery_config.timeout, scan).await {
+            Ok(_) => {
                 debug!("Network scan completed");
+            }
+            Err(_) => {
+                warn!("Network scan timeout");
             }
         }
 
@@ -217,7 +257,6 @@ impl DeviceDiscovery {
     async fn probe_device(ip: Ipv4Addr, port: u16) -> Result<Device> {
         let socket_addr = SocketAddr::new(IpAddr::V4(ip), port);
 
-        // Try to connect to the device
         match tokio::time::timeout(
             Duration::from_millis(1000),
             tokio::net::TcpStream::connect(socket_addr),
@@ -233,20 +272,7 @@ impl DeviceDiscovery {
             _ => {}
         }
 
-        // If we can't get device info, create a basic device entry
-        Ok(Device {
-            id: Uuid::new_v4(),
-            name: format!("Device-{}", ip),
-            device_type: DeviceType::Unknown,
-            ip: IpAddr::V4(ip),
-            port,
-            api_port: port,
-            last_seen: Utc::now(),
-            is_online: true,
-            capabilities: vec!["file-transfer".to_string()],
-            transfer_speed: None,
-            version: None,
-        })
+        Err(anyhow::anyhow!("No SwiftShare service at {}", socket_addr))
     }
 
     async fn get_device_info(ip: Ipv4Addr, port: u16) -> Result<Device> {
@@ -362,6 +388,49 @@ impl DeviceDiscovery {
             capabilities: vec!["file-transfer".to_string(), "encryption".to_string()],
             transfer_speed: Some(25.0),
             version: Some(env!("CARGO_PKG_VERSION").to_string()),
+        }
+    }
+
+    fn running_in_container() -> bool {
+        Path::new("/.dockerenv").exists()
+            || env::var("container").is_ok()
+            || env::var("KUBERNETES_SERVICE_HOST").is_ok()
+    }
+
+    fn scan_in_container_enabled() -> bool {
+        env::var("SWIFTSHARE_SCAN_IN_CONTAINER")
+            .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+            .unwrap_or(false)
+    }
+
+    fn should_skip_interface(name: &str, ip: Ipv4Addr) -> bool {
+        let lower_name = name.to_ascii_lowercase();
+        lower_name == "lo"
+            || lower_name.starts_with("docker")
+            || lower_name.starts_with("br-")
+            || lower_name.starts_with("veth")
+            || lower_name.starts_with("tun")
+            || lower_name.starts_with("tap")
+            || Self::should_skip_ip(ip)
+    }
+
+    fn should_skip_ip(ip: Ipv4Addr) -> bool {
+        ip.is_loopback() || ip.is_link_local() || ip.is_unspecified() || ip.is_broadcast()
+    }
+
+    fn ipv4_prefix_len(netmask: Ipv4Addr) -> Option<u8> {
+        let mask = u32::from(netmask);
+        let prefix = mask.count_ones() as u8;
+        let expected = if prefix == 0 {
+            0
+        } else {
+            u32::MAX << (32 - prefix)
+        };
+
+        if mask == expected {
+            Some(prefix)
+        } else {
+            None
         }
     }
 }

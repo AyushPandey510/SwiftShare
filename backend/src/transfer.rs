@@ -4,12 +4,13 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::RwLock;
-use tracing::{error, info, warn};
+use tokio::time::{timeout, Duration};
+use tracing::{error, info};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -111,7 +112,7 @@ impl TransferEngine {
 
     async fn handle_connection(
         mut socket: TcpStream,
-        addr: SocketAddr,
+        _addr: SocketAddr,
         transfers: Arc<RwLock<HashMap<Uuid, TransferProgress>>>,
         active_transfers: Arc<RwLock<HashMap<Uuid, tokio::task::JoinHandle<()>>>>,
         config: Config,
@@ -121,11 +122,14 @@ impl TransferEngine {
         let mut chunk = [0; 1024];
 
         loop {
-            let n = socket.read(&mut chunk).await?;
+            let n = timeout(Duration::from_secs(10), socket.read(&mut chunk)).await??;
             if n == 0 {
                 break;
             }
             buffer.extend_from_slice(&chunk[..n]);
+            if buffer.len() > 16 * 1024 {
+                return Err(anyhow::anyhow!("Transfer request metadata too large"));
+            }
 
             // Check for end of request (simple delimiter)
             if buffer.ends_with(b"\n\n") {
@@ -135,7 +139,20 @@ impl TransferEngine {
 
         // Parse transfer request
         let request_str = String::from_utf8_lossy(&buffer);
-        let request: TransferRequest = serde_json::from_str(request_str.trim())?;
+        let mut request: TransferRequest = serde_json::from_str(request_str.trim())?;
+        request.filename = sanitize_filename(&request.filename);
+
+        if request.size == 0 || request.size > config.max_file_size {
+            let response = TransferResponse {
+                success: false,
+                message: "Transfer size is not allowed".to_string(),
+                transfer_id: None,
+            };
+            let response_json = serde_json::to_string(&response)?;
+            socket.write_all(response_json.as_bytes()).await?;
+            socket.write_all(b"\n\n").await?;
+            return Err(anyhow::anyhow!("Transfer size is not allowed"));
+        }
 
         let transfer_id = Uuid::new_v4();
         info!(
@@ -192,10 +209,11 @@ impl TransferEngine {
         request: TransferRequest,
         transfer_id: Uuid,
         transfers: Arc<RwLock<HashMap<Uuid, TransferProgress>>>,
-        active_transfers: Arc<RwLock<HashMap<Uuid, tokio::task::JoinHandle<()>>>>,
+        _active_transfers: Arc<RwLock<HashMap<Uuid, tokio::task::JoinHandle<()>>>>,
         config: Config,
     ) -> Result<()> {
-        let file_path = config.download_dir.join(&request.filename);
+        tokio::fs::create_dir_all(&config.download_dir).await?;
+        let file_path = unique_file_path(&config.download_dir, &request.filename).await?;
         let mut file = tokio::fs::File::create(&file_path).await?;
 
         let mut buffer = [0; 8192];
@@ -210,6 +228,10 @@ impl TransferEngine {
 
             file.write_all(&buffer[..n]).await?;
             total_bytes += n as u64;
+            if total_bytes > config.max_file_size || total_bytes > request.size {
+                let _ = tokio::fs::remove_file(&file_path).await;
+                return Err(anyhow::anyhow!("Transfer exceeded allowed size"));
+            }
 
             // Update progress
             {
@@ -527,14 +549,55 @@ impl TransferEngine {
 }
 
 fn sanitize_filename(filename: &str) -> String {
-    filename
+    let candidate = Path::new(filename)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("transfer.bin")
+        .trim();
+
+    let sanitized: String = candidate
         .chars()
         .map(|c| {
-            if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' {
+            if c.is_ascii_alphanumeric() || c == '.' || c == '-' || c == '_' {
                 c
             } else {
                 '_'
             }
         })
-        .collect()
+        .collect::<String>()
+        .trim_matches('.')
+        .to_string();
+
+    if sanitized.is_empty() {
+        format!("transfer_{}.bin", Uuid::new_v4())
+    } else {
+        sanitized
+    }
+}
+
+async fn unique_file_path(download_dir: &Path, filename: &str) -> Result<PathBuf> {
+    let initial_path = download_dir.join(filename);
+    if tokio::fs::metadata(&initial_path).await.is_err() {
+        return Ok(initial_path);
+    }
+
+    let stem = Path::new(filename)
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or("transfer");
+    let extension = Path::new(filename).extension().and_then(|ext| ext.to_str());
+
+    for _ in 0..100 {
+        let suffix = Uuid::new_v4().simple().to_string();
+        let candidate_name = match extension {
+            Some(ext) if !ext.is_empty() => format!("{}_{}.{}", stem, &suffix[..8], ext),
+            _ => format!("{}_{}", stem, &suffix[..8]),
+        };
+        let candidate_path = download_dir.join(candidate_name);
+        if tokio::fs::metadata(&candidate_path).await.is_err() {
+            return Ok(candidate_path);
+        }
+    }
+
+    Err(anyhow::anyhow!("Could not allocate unique file path"))
 }
