@@ -168,10 +168,7 @@ impl DeviceDiscovery {
                         continue;
                     }
 
-                    let prefix = ipv4
-                        .netmask
-                        .and_then(Self::ipv4_prefix_len)
-                        .unwrap_or(24);
+                    let prefix = ipv4.netmask.and_then(Self::ipv4_prefix_len).unwrap_or(24);
 
                     if !(16..=30).contains(&prefix) {
                         debug!(
@@ -228,19 +225,18 @@ impl DeviceDiscovery {
             }
         });
 
-        let scan = stream::iter(candidates)
-            .for_each_concurrent(64, |ip| {
-                let devices_clone = devices.clone();
-                let discovery_config_clone = discovery_config.clone();
-                async move {
-                    if let Ok(device) = Self::probe_device(ip, port).await {
-                        let mut devices = devices_clone.write().await;
-                        if devices.len() < discovery_config_clone.max_devices {
-                            devices.insert(device.id, device);
-                        }
+        let scan = stream::iter(candidates).for_each_concurrent(64, |ip| {
+            let devices_clone = devices.clone();
+            let discovery_config_clone = discovery_config.clone();
+            async move {
+                if let Ok(device) = Self::probe_device(ip, port).await {
+                    let mut devices = devices_clone.write().await;
+                    if devices.len() < discovery_config_clone.max_devices {
+                        devices.insert(device.id, device);
                     }
                 }
-            });
+            }
+        });
 
         match tokio::time::timeout(discovery_config.timeout, scan).await {
             Ok(_) => {
