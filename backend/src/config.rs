@@ -144,6 +144,7 @@ impl Config {
 
         vec![
             self.public_base_url(),
+            "https://swift-share-tau.vercel.app".to_string(),
             "http://localhost:5173".to_string(),
             "http://localhost:3000".to_string(),
             "http://localhost:8080".to_string(),
