@@ -1,69 +1,47 @@
-import { Upload, Link2, Share2 } from "lucide-react";
+import { Link2, MousePointerClick, Upload } from "lucide-react";
 
 const steps = [
   {
-    number: "1",
     icon: Upload,
-    title: "Upload Files",
-    description: "Drag and drop your files or click to browse. Support for all file types up to 100MB.",
+    title: "Add content",
+    description: "Upload one file or paste text directly into the sharing panel.",
   },
   {
-    number: "2",
+    icon: MousePointerClick,
+    title: "Set the download count",
+    description: "Choose how many people, from 1 to 10, can use the link.",
+  },
+  {
     icon: Link2,
-    title: "Get Share Link",
-    description: "Receive a unique shareable link and QR code instantly after upload.",
-  },
-  {
-    number: "3",
-    icon: Share2,
-    title: "Share Anywhere",
-    description: "Send the link or scan the QR code. Recipients can download immediately.",
+    title: "Copy the link",
+    description: "Send the generated link to the people who need the file.",
   },
 ];
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="py-20 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-sm font-semibold text-primary mb-2 uppercase tracking-wider">
-            Simple Process
+    <section id="how-it-works" className="px-4 py-16">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-10 max-w-3xl">
+          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+            How SwiftShare works
           </h2>
-          <h3 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            How It Works
-          </h3>
-          <p className="text-xl text-muted-foreground">
-            Sharing files has never been easier. Just follow these simple steps.
+          <p className="mt-3 text-muted-foreground">
+            The current workflow is deliberately simple: upload, limit access, copy link.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid gap-5 md:grid-cols-3">
           {steps.map((step, index) => (
-            <div 
-              key={index}
-              className="relative"
-            >
-              <div className="feature-card text-center">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold">
-                  {step.number}
-                </div>
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 mx-auto mt-8">
-                  <step.icon className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-foreground">
-                  {step.title}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {step.description}
-                </p>
+            <div key={step.title} className="rounded-xl border border-border bg-white p-6">
+              <div className="mb-5 flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                  {index + 1}
+                </span>
+                <step.icon className="h-6 w-6 text-primary" />
               </div>
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 10L25 20L15 30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"/>
-                  </svg>
-                </div>
-              )}
+              <h3 className="text-xl font-semibold text-foreground">{step.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.description}</p>
             </div>
           ))}
         </div>

@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+
+User-agent: Yandex
+Allow: /
+Disallow: /api/
+Host: https://swift-share-tau.vercel.app
 
 Sitemap: https://swift-share-tau.vercel.app/sitemap.xml

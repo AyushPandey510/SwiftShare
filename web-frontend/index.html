@@ -3,29 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SwiftShare - File Sharing Made Simple</title>
-    <meta name="description" content="Upload files and get a shareable link with QR code. No registration required. Fast, secure, and free file sharing." />
-    <meta name="keywords" content="file sharing, file transfer, share files, SwiftShare, send files, QR code file share" />
+
+    <!-- Primary meta with target keyword first -->
+    <title>Share Files Online Free - SwiftShare</title>
+    <meta
+      name="description"
+      content="Upload files or paste text and get a free, temporary share link with QR code in seconds. No signup required. Limit downloads to 1-10 people and transfer files fast."
+    />
+    <meta
+      name="keywords"
+      content="share files online, free file sharing, file transfer, upload files, send files, file sharing no signup, temporary file share, share files with link"
+    />
     <meta name="author" content="SwiftShare" />
     <meta name="robots" content="index,follow" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#6754df" />
     <link rel="canonical" href="https://swift-share-tau.vercel.app/" />
 
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Performance: preconnect to third-party origins used by the page -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <!-- Open Graph -->
-    <meta property="og:title" content="SwiftShare - File Sharing Made Simple" />
-    <meta property="og:description" content="Upload files and get a shareable link with QR code. No registration required. Fast, secure, and free file sharing." />
+    <meta property="og:title" content="Share Files Online Free - SwiftShare" />
+    <meta
+      property="og:description"
+      content="Upload files or paste text and get a free, temporary share link with QR code in seconds. No signup required. Limit downloads to 1-10 people and transfer files fast."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://swift-share-tau.vercel.app/" />
     <meta property="og:site_name" content="SwiftShare" />
-    <meta property="og:image" content="https://swift-share-tau.vercel.app/favicon.svg" />
+    <meta property="og:image" content="https://swift-share-tau.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="SwiftShare - share files, text, APK, JSON, and PDF online free with temporary download links and QR codes."
+    />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="SwiftShare - File Sharing Made Simple" />
-    <meta name="twitter:description" content="Upload files and get a shareable link with QR code. No registration required. Fast, secure, and free file sharing." />
-    <meta name="twitter:image" content="https://swift-share-tau.vercel.app/favicon.svg" />
+    <meta name="twitter:title" content="Share Files Online Free - SwiftShare" />
+    <meta
+      name="twitter:description"
+      content="Upload files or paste text and get a free, temporary share link with QR code in seconds. No signup required. Limit downloads to 1-10 people and transfer files fast."
+    />
+    <meta name="twitter:image" content="https://swift-share-tau.vercel.app/og-image.png" />
+    <meta name="twitter:image:alt" content="SwiftShare social share image" />
 
-    <!-- Structured data: WebSite / Organization -->
+    <!-- Structured data: Organization, WebSite, WebApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -34,16 +63,47 @@
           "@type": "Organization",
           "name": "SwiftShare",
           "url": "https://swift-share-tau.vercel.app/",
-          "logo": "https://swift-share-tau.vercel.app/favicon.svg"
+          "logo": "https://swift-share-tau.vercel.app/favicon.svg",
+          "sameAs": [
+            "https://x.com/AyushPande28353",
+            "https://github.com/AyushPandey510",
+            "https://www.linkedin.com/in/ayush-pandey-097027242/"
+          ]
         },
         {
           "@type": "WebSite",
           "url": "https://swift-share-tau.vercel.app/",
           "name": "SwiftShare",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://swift-share-tau.vercel.app/search?q={search_term_string}",
-            "query-input": "required name=search_term_string"
+          "description": "Free temporary file sharing with download limits, expiring links, and QR codes.",
+          "publisher": {
+            "@type": "Organization",
+            "name": "SwiftShare"
+          },
+          "inLanguage": "en"
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://swift-share-tau.vercel.app/#webapp",
+          "url": "https://swift-share-tau.vercel.app/",
+          "name": "SwiftShare",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "Any",
+          "description": "Free temporary file sharing: upload a file or paste text, limit downloads from 1 to 10 people, and share an expiring link with a QR code.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Upload files up to 250 MB",
+            "Paste and share text",
+            "Temporary links that expire after 24 hours",
+            "1 to 10 allowed downloads",
+            "QR code for every shared file"
+          ],
+          "publisher": {
+            "@type": "Organization",
+            "name": "SwiftShare"
           }
         }
       ]

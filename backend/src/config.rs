@@ -74,8 +74,8 @@ impl Config {
             download_dir,
             database_path,
             encryption_key: "default-encryption-key-32-bytes-long".to_string(),
-            max_file_size: 1024 * 1024 * 1024, // 1GB
-            buffer_size: 8192,                 // 8KB
+            max_file_size: 250 * 1024 * 1024, // 250MB
+            buffer_size: 8192,                // 8KB
         }
     }
 
@@ -129,29 +129,38 @@ impl Config {
     }
 
     pub fn allowed_origins(&self) -> Vec<String> {
-        if let Ok(origins) = env::var("CORS_ALLOWED_ORIGINS") {
-            let parsed: Vec<String> = origins
-                .split(',')
-                .map(str::trim)
-                .filter(|origin| !origin.is_empty())
-                .map(|origin| origin.trim_end_matches('/').to_string())
-                .collect();
-
-            if !parsed.is_empty() {
-                return parsed;
-            }
-        }
-
-        vec![
+        let mut origins = vec![
             self.public_base_url(),
             "https://swift-share-tau.vercel.app".to_string(),
             "http://localhost:5173".to_string(),
             "http://localhost:3000".to_string(),
             "http://localhost:8080".to_string(),
+            "http://localhost:8081".to_string(),
+            "http://localhost:8082".to_string(),
+            "http://localhost:8083".to_string(),
             "http://127.0.0.1:5173".to_string(),
             "http://127.0.0.1:3000".to_string(),
             "http://127.0.0.1:8080".to_string(),
-        ]
+            "http://127.0.0.1:8081".to_string(),
+            "http://127.0.0.1:8082".to_string(),
+            "http://127.0.0.1:8083".to_string(),
+        ];
+
+        if let Ok(extra) = env::var("CORS_ALLOWED_ORIGINS") {
+            origins.extend(
+                extra
+                    .split(',')
+                    .map(str::trim)
+                    .filter(|origin| !origin.is_empty())
+                    .map(|origin| origin.trim_end_matches('/').to_string()),
+            );
+        }
+
+        origins.extend(local_lan_origins());
+
+        origins.sort();
+        origins.dedup();
+        origins
     }
 
     fn generate_encryption_key() -> String {
@@ -160,6 +169,48 @@ impl Config {
         let key: [u8; 32] = rng.gen();
         general_purpose::STANDARD.encode(key)
     }
+}
+
+/// Builds CORS origins for the machine's LAN IPv4 addresses on the usual
+/// frontend dev ports, so the app works when opened from another device
+/// without hand-editing the allow-list.
+fn local_lan_origins() -> Vec<String> {
+    use network_interface::NetworkInterfaceConfig;
+
+    const FRONTEND_PORTS: [u16; 6] = [3000, 5173, 8080, 8081, 8082, 8083];
+
+    let mut origins = Vec::new();
+
+    if let Ok(interfaces) = network_interface::NetworkInterface::show() {
+        for interface in interfaces {
+            if let Some(network_interface::Addr::V4(ipv4)) = interface.addr {
+                let ip = ipv4.ip;
+                if should_skip_origin_ip(&interface.name, ip) {
+                    continue;
+                }
+
+                for port in FRONTEND_PORTS {
+                    origins.push(format!("http://{}:{}", ip, port));
+                }
+            }
+        }
+    }
+
+    origins
+}
+
+fn should_skip_origin_ip(name: &str, ip: std::net::Ipv4Addr) -> bool {
+    let lower_name = name.to_ascii_lowercase();
+    lower_name == "lo"
+        || lower_name.starts_with("docker")
+        || lower_name.starts_with("br-")
+        || lower_name.starts_with("veth")
+        || lower_name.starts_with("tun")
+        || lower_name.starts_with("tap")
+        || ip.is_loopback()
+        || ip.is_link_local()
+        || ip.is_unspecified()
+        || ip.is_broadcast()
 }
 
 #[cfg(test)]
@@ -172,7 +223,9 @@ mod tests {
         let origins = config.allowed_origins();
 
         assert!(origins.contains(&"http://localhost:8080".to_string()));
+        assert!(origins.contains(&"http://localhost:8082".to_string()));
         assert!(origins.contains(&"http://127.0.0.1:8080".to_string()));
+        assert!(origins.contains(&"http://127.0.0.1:8082".to_string()));
         assert!(origins.contains(&"http://localhost:5173".to_string()));
     }
 }

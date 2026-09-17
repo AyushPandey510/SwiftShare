@@ -1,8 +1,22 @@
 import { FileData } from '@/types/file';
 
-export const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
-).replace(/\/$/, '');
+const DEFAULT_API_PORT = 3001;
+
+const resolveApiBaseUrl = () => {
+  const configured = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+  if (configured) {
+    return configured.replace(/\/$/, '');
+  }
+
+  if (import.meta.env.DEV && typeof window !== 'undefined' && window.location.hostname) {
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    return `${protocol}//${window.location.hostname}:${DEFAULT_API_PORT}`;
+  }
+
+  return `http://localhost:${DEFAULT_API_PORT}`;
+};
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 export const getApiBaseUrl = () => API_BASE_URL;
 
@@ -13,9 +27,13 @@ export interface ApiResponse<T> {
 }
 
 // File upload API
-export const uploadFile = async (file: File): Promise<ApiResponse<FileData>> => {
+export const uploadFile = async (
+  file: File,
+  maxDownloads = 1,
+): Promise<ApiResponse<FileData>> => {
   try {
     const formData = new FormData();
+    formData.append('maxDownloads', String(Math.min(Math.max(maxDownloads, 1), 10)));
     formData.append('file', file);
 
     const response = await fetch(`${API_BASE_URL}/api/upload`, {
@@ -24,7 +42,14 @@ export const uploadFile = async (file: File): Promise<ApiResponse<FileData>> => 
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      let message = `HTTP error! status: ${response.status}`;
+      try {
+        const body = await response.json();
+        if (body?.error) message = body.error;
+      } catch {
+        // ignore unparseable error bodies
+      }
+      throw new Error(message);
     }
 
     const result = await response.json();

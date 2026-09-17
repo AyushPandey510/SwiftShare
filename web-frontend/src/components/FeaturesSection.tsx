@@ -1,57 +1,72 @@
-import { Zap, Shield, Smartphone } from "lucide-react";
+import { Clock, FileUp, Users } from "lucide-react";
 
 const features = [
   {
-    icon: Zap,
-    title: "Lightning Fast",
-    description: "Upload and share files in seconds with our optimized infrastructure and global CDN.",
+    icon: FileUp,
+    title: "Upload files or pasted text",
+    description:
+      "Share APK, JSON, PDF, ZIP, media, documents, or pasted text from one upload panel.",
   },
   {
-    icon: Shield,
-    title: "Secure & Private",
-    description: "End-to-end encryption ensures your files stay private and secure during transfer.",
+    icon: Users,
+    title: "Choose 1 to 10 downloads",
+    description:
+      "Pick how many people can download the shared file. Unlimited public links are intentionally not offered.",
   },
   {
-    icon: Smartphone,
-    title: "Cross-Platform",
-    description: "Works on any device - desktop, mobile, tablet. Access from anywhere, anytime.",
+    icon: Clock,
+    title: "Temporary links",
+    description:
+      "Shared files expire after 24 hours, keeping SwiftShare focused on quick handoffs instead of permanent storage.",
   },
+];
+
+const futureFeatures = [
+  "QR access",
+  "Mobile app distribution",
+  "Web dashboard",
+  "Public API access",
+  "PDF editing or conversion tools",
 ];
 
 const FeaturesSection = () => {
   return (
-    <section id="features" className="py-20 px-4 bg-secondary/30">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-sm font-semibold text-primary mb-2 uppercase tracking-wider">
-            Powerful Features
+    <section id="features" className="bg-secondary/30 px-4 py-16">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-10 max-w-3xl">
+          <h2 className="text-3xl font-bold text-foreground md:text-4xl">
+            Features that work today
           </h2>
-          <h3 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Why Choose SwiftShare?
-          </h3>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Experience the fastest and most secure way to share files online
+          <p className="mt-3 text-muted-foreground">
+            The page now describes only the upload and sharing workflow that is currently wired to
+            the backend.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <div 
-              key={index}
-              className="feature-card text-center"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
-                <feature.icon className="w-8 h-8 text-primary" />
+        <div className="grid gap-5 md:grid-cols-3">
+          {features.map((feature) => (
+            <div key={feature.title} className="rounded-xl border border-border bg-white p-6">
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10">
+                <feature.icon className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-2xl font-semibold mb-3 text-foreground">
-                {feature.title}
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {feature.description}
-              </p>
+              <h3 className="text-xl font-semibold text-foreground">{feature.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{feature.description}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-8 rounded-xl border border-dashed border-border bg-white p-5">
+          <h3 className="text-lg font-semibold text-foreground">Parked for later</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            These are intentionally not promoted as live features yet:
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {futureFeatures.map((feature) => (
+              <span key={feature} className="rounded-full bg-secondary px-3 py-1 text-sm text-muted-foreground">
+                {feature}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>

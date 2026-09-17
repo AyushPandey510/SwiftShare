@@ -8,6 +8,8 @@
 /* Figma-inspired Modern Design System - All colors in HSL */
 @layer base {
   :root {
+    color-scheme: light;
+
     /* Clean white background */
     --background: 0 0% 100%;
     --foreground: 0 0% 9%;
@@ -139,5 +141,16 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

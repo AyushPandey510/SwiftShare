@@ -5,11 +5,13 @@ use futures::{SinkExt, StreamExt, TryStreamExt};
 use rand::{distributions::Alphanumeric, Rng};
 use serde_json::json;
 use std::convert::Infallible;
+use std::env;
 use std::sync::Arc;
 use std::{collections::HashMap, path::PathBuf};
 use tokio::io::AsyncWriteExt;
 use tokio::sync::RwLock;
 use tracing::{error, info};
+use warp::http::{HeaderMap, StatusCode};
 use warp::Filter;
 // use warp::multipart;  // Commented out as it's not directly used
 use warp::ws::{Message, WebSocket, Ws};
@@ -135,7 +137,7 @@ async fn start_api_server(state: AppState) -> Result<()> {
         .and(warp::body::content_length_limit(
             state.config.max_file_size + 1024 * 1024,
         ))
-        .and(warp::multipart::form())
+        .and(warp::multipart::form().max_length(state.config.max_file_size + 1024 * 1024))
         .and(with_state(state.clone()))
         .and_then(create_transfer_multipart);
 
@@ -149,7 +151,8 @@ async fn start_api_server(state: AppState) -> Result<()> {
         .and(warp::body::content_length_limit(
             state.config.max_file_size + 1024 * 1024,
         ))
-        .and(warp::multipart::form())
+        .and(warp::multipart::form().max_length(state.config.max_file_size + 1024 * 1024))
+        .and(warp::header::headers_cloned())
         .and(with_state(state.clone()))
         .and_then(upload_file_multipart);
 
@@ -167,11 +170,13 @@ async fn start_api_server(state: AppState) -> Result<()> {
 
     let file_by_code = warp::path!("api" / "file" / String)
         .and(warp::get())
+        .and(warp::header::headers_cloned())
         .and(with_state(state.clone()))
         .and_then(get_file_by_code);
 
     let qr_code = warp::path!("api" / "qr" / String)
         .and(warp::get())
+        .and(warp::header::headers_cloned())
         .and(with_state(state.clone()))
         .and_then(get_qr_code);
 
@@ -181,6 +186,7 @@ async fn start_api_server(state: AppState) -> Result<()> {
         .and_then(get_transfers_history);
 
     let allowed_origins = state.config.allowed_origins();
+    let max_file_size = state.config.max_file_size;
     let cors = warp::cors()
         .allow_origins(allowed_origins.iter().map(String::as_str))
         .allow_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
@@ -205,6 +211,7 @@ async fn start_api_server(state: AppState) -> Result<()> {
         .or(file_by_code)
         .or(qr_code)
         .or(transfers_history)
+        .recover(move |err: warp::Rejection| handle_rejection(err, max_file_size))
         .with(cors);
 
     info!(
@@ -268,6 +275,7 @@ async fn get_transfer_status(
 
 async fn upload_file_multipart(
     form: warp::multipart::FormData,
+    headers: HeaderMap,
     state: Arc<AppState>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     use bytes::Buf;
@@ -275,6 +283,7 @@ async fn upload_file_multipart(
     info!("Starting file upload processing");
 
     let mut parts = form;
+    let mut max_downloads = 1u32;
 
     while let Some(part_result) = parts.next().await {
         match part_result {
@@ -282,6 +291,15 @@ async fn upload_file_multipart(
                 let name = part.name().to_string();
                 info!("Processing part: {}", name);
                 match name.as_str() {
+                    "maxDownloads" => {
+                        if let Some(Ok(data)) = part.data().await {
+                            let requested = String::from_utf8_lossy(data.chunk())
+                                .trim()
+                                .parse::<u32>()
+                                .unwrap_or(1);
+                            max_downloads = requested.clamp(1, 10);
+                        }
+                    }
                     "file" => {
                         let filename = part
                             .filename()
@@ -393,7 +411,7 @@ async fn upload_file_multipart(
 
                         info!("File uploaded successfully: {} ({} bytes)", filename, size);
 
-                        let public_base_url = state.config.public_base_url();
+                        let public_base_url = request_public_base_url(&state.config, &headers);
                         let uploaded_at = Utc::now();
                         let expires_at = uploaded_at + chrono::Duration::hours(24);
                         let uploaded_file = UploadedFile {
@@ -406,7 +424,7 @@ async fn upload_file_multipart(
                             uploaded_at: uploaded_at.to_rfc3339(),
                             expires_at: expires_at.to_rfc3339(),
                             download_count: 0,
-                            max_downloads: 1,
+                            max_downloads,
                         };
 
                         state
@@ -496,8 +514,95 @@ fn generate_file_code() -> String {
         .collect()
 }
 
+fn request_public_base_url(config: &Config, headers: &HeaderMap) -> String {
+    if let Ok(base_url) = env::var("PUBLIC_BASE_URL") {
+        let base_url = base_url.trim().trim_end_matches('/');
+        if !base_url.is_empty() {
+            return base_url.to_string();
+        }
+    }
+
+    let host = first_header_value(headers, "x-forwarded-host")
+        .or_else(|| first_header_value(headers, "host"));
+
+    if let Some(host) = host {
+        let proto = first_header_value(headers, "x-forwarded-proto")
+            .or_else(|| first_header_value(headers, "x-forwarded-scheme"))
+            .filter(|proto| matches!(proto.as_str(), "http" | "https"))
+            .unwrap_or_else(|| {
+                if first_header_value(headers, "x-forwarded-ssl").as_deref() == Some("on") {
+                    "https".to_string()
+                } else {
+                    "http".to_string()
+                }
+            });
+
+        return format!("{}://{}", proto, host.trim_end_matches('/'));
+    }
+
+    config.public_base_url()
+}
+
+fn first_header_value(headers: &HeaderMap, name: &str) -> Option<String> {
+    headers
+        .get(name)
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.split(',').next())
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToString::to_string)
+}
+
 fn is_valid_file_code(code: &str) -> bool {
     code.len() == 6 && code.chars().all(|c| c.is_ascii_alphanumeric())
+}
+
+async fn handle_rejection(
+    err: warp::Rejection,
+    max_file_size: u64,
+) -> Result<impl warp::Reply, Infallible> {
+    let (code, message) = if err.is_not_found() {
+        (StatusCode::NOT_FOUND, "Route not found".to_string())
+    } else if err.find::<warp::reject::PayloadTooLarge>().is_some() {
+        (
+            StatusCode::PAYLOAD_TOO_LARGE,
+            format!(
+                "File too large. Maximum upload size is {} MB",
+                max_file_size / (1024 * 1024)
+            ),
+        )
+    } else if err.find::<warp::reject::LengthRequired>().is_some() {
+        (
+            StatusCode::LENGTH_REQUIRED,
+            "Request body length is required".to_string(),
+        )
+    } else if err.find::<warp::reject::MethodNotAllowed>().is_some() {
+        (
+            StatusCode::METHOD_NOT_ALLOWED,
+            "Method not allowed".to_string(),
+        )
+    } else if err.find::<warp::reject::UnsupportedMediaType>().is_some() {
+        (
+            StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            "Unsupported media type".to_string(),
+        )
+    } else {
+        (StatusCode::BAD_REQUEST, "Bad request".to_string())
+    };
+
+    info!("Request rejected: {} - {}", code, message);
+
+    Ok(warp::reply::with_header(
+        warp::reply::with_status(
+            warp::reply::json(&json!({
+                "success": false,
+                "error": message
+            })),
+            code,
+        ),
+        "Access-Control-Allow-Origin",
+        "*",
+    ))
 }
 
 fn uploaded_file_expired(uploaded_file: &UploadedFile) -> bool {
@@ -906,6 +1011,7 @@ async fn download_file(
 
 async fn get_file_by_code(
     code: String,
+    headers: HeaderMap,
     state: Arc<AppState>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let uploaded_file = locate_uploaded_file_by_code(&state, &code).await;
@@ -919,7 +1025,7 @@ async fn get_file_by_code(
             })));
         }
 
-        let public_base_url = state.config.public_base_url();
+        let public_base_url = request_public_base_url(&state.config, &headers);
         Ok(warp::reply::json(&json!({
             "success": true,
             "data": {
@@ -947,6 +1053,7 @@ async fn get_file_by_code(
 
 async fn get_qr_code(
     code: String,
+    headers: HeaderMap,
     state: Arc<AppState>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let uploaded_file = locate_uploaded_file_by_code(&state, &code).await;
@@ -980,7 +1087,7 @@ async fn get_qr_code(
             .unwrap());
     }
 
-    let public_base_url = state.config.public_base_url();
+    let public_base_url = request_public_base_url(&state.config, &headers);
     let download_url = format!("{}/api/download/{}", public_base_url, uploaded_file.code);
 
     match QRCodeManager::generate_text_qr(&download_url) {
@@ -1006,5 +1113,40 @@ async fn get_qr_code(
                 )
                 .unwrap())
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use warp::http::{HeaderMap, HeaderValue};
+
+    #[test]
+    fn request_public_base_url_uses_forwarded_host_and_proto() {
+        let config = Config::default();
+        let mut headers = HeaderMap::new();
+        headers.insert("host", HeaderValue::from_static("localhost:3001"));
+        headers.insert(
+            "x-forwarded-host",
+            HeaderValue::from_static("swiftshare.example.com"),
+        );
+        headers.insert("x-forwarded-proto", HeaderValue::from_static("https"));
+
+        assert_eq!(
+            request_public_base_url(&config, &headers),
+            "https://swiftshare.example.com"
+        );
+    }
+
+    #[test]
+    fn request_public_base_url_falls_back_to_host_header() {
+        let config = Config::default();
+        let mut headers = HeaderMap::new();
+        headers.insert("host", HeaderValue::from_static("192.168.1.20:3001"));
+
+        assert_eq!(
+            request_public_base_url(&config, &headers),
+            "http://192.168.1.20:3001"
+        );
     }
 }
