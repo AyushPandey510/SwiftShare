@@ -11,7 +11,7 @@ const sections = [
   },
   {
     heading: "Upload limits",
-    body: `SwiftShare currently accepts individual files up to ${formatFileSize(MAX_UPLOAD_BYTES)}. Each share link may be downloaded between 1 and 10 times, as chosen during upload. Larger or sustained traffic is served on a best-effort basis.`,
+    body: `You can upload one file up to ${formatFileSize(MAX_UPLOAD_BYTES)} at a time and choose a total limit of 1 to 10 downloads. Repeat downloads count toward this limit. Links expire 24 hours after upload or when their download limit is reached. Keep your own copy of files you need to retain.`,
   },
   {
     heading: "No warranty",
@@ -23,7 +23,7 @@ const sections = [
   },
   {
     heading: "Privacy of uploads",
-    body: "Anyone with your share link can download the file until it expires. Treat share links like passwords and only send them to intended recipients. See the Privacy Policy for details on how uploads are handled.",
+    body: "Anyone with your download link, QR code, or file code can download while the link is active and downloads remain. Share these details only with intended recipients. Link expiry does not delete copies already downloaded. See the Privacy Policy for details on how uploads are handled.",
   },
   {
     heading: "Changes to these terms",
@@ -54,7 +54,7 @@ const TermsPage = () => {
           SwiftShare Policy
         </p>
         <h1 className="text-4xl font-bold text-foreground">Terms of Service</h1>
-        <p className="mt-3 text-sm text-muted-foreground">Last updated: September 17, 2026</p>
+        <p className="mt-3 text-sm text-muted-foreground">Last updated: September 18, 2026</p>
         <p className="mt-6 leading-7 text-muted-foreground">
           These terms govern your use of SwiftShare, the free temporary file sharing service. By
           uploading or downloading files you agree to the terms below. For information about your

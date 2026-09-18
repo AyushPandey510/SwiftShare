@@ -2,19 +2,19 @@ import { Link2, MousePointerClick, Upload } from "lucide-react";
 
 const steps = [
   {
-    icon: Upload,
-    title: "Add content",
-    description: "Upload one file or paste text directly into the sharing panel.",
+    icon: MousePointerClick,
+    title: "Choose your download limit",
+    description: "Allow 1 to 10 downloads in total. Repeat downloads count, too.",
   },
   {
-    icon: MousePointerClick,
-    title: "Set the download count",
-    description: "Choose how many people, from 1 to 10, can use the link.",
+    icon: Upload,
+    title: "Upload a file or paste text",
+    description: "Send a file up to 250 MB, or turn your notes into a downloadable text file.",
   },
   {
     icon: Link2,
-    title: "Copy the link",
-    description: "Send the generated link to the people who need the file.",
+    title: "Send the link",
+    description: "Share the download link, QR code, or file code. Your recipient needs no account.",
   },
 ];
 
@@ -27,7 +27,7 @@ const HowItWorks = () => {
             How SwiftShare works
           </h2>
           <p className="mt-3 text-muted-foreground">
-            The current workflow is deliberately simple: upload, limit access, copy link.
+            Three steps from your device to theirs.
           </p>
         </div>
 

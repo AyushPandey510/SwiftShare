@@ -52,6 +52,7 @@ const UseCasePage = () => {
       />
       <Navbar />
       <QuickUpload
+        key={useCase.path}
         compact
         defaultMode={defaultMode}
         title={useCase.h1}
@@ -77,39 +78,37 @@ const UseCasePage = () => {
           <article className="space-y-8">
             <section>
               <h2 className="text-3xl font-bold text-foreground">
-                When to use this SwiftShare page
+                {useCase.detailTitle}
               </h2>
               <p className="mt-3 leading-7 text-muted-foreground">
-                Use this page when you need a quick temporary handoff instead of a permanent cloud
-                folder. Upload the file, pick how many downloads are allowed, and send the generated
-                link to the people who need it.
+                {useCase.detail}
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-foreground">Current limits</h2>
+              <h2 className="text-2xl font-bold text-foreground">{useCase.tipTitle}</h2>
               <p className="mt-3 leading-7 text-muted-foreground">
-                The application accepts files up to {formatFileSize(MAX_UPLOAD_BYTES)} because the
-                backend is configured with the same limit. For consistently large public traffic, the
-                next infrastructure step is object storage such as S3-compatible storage plus
-                resumable uploads.
+                {useCase.tip}
               </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-foreground">Related search terms</h2>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {useCase.keywords.slice(0, 14).map((keyword) => (
-                  <span key={keyword} className="rounded-full bg-secondary px-3 py-1 text-sm text-muted-foreground">
-                    {keyword}
-                  </span>
-                ))}
-              </div>
+              <h2 className="text-2xl font-bold text-foreground">How long is my file available?</h2>
+              <p className="mt-3 leading-7 text-muted-foreground">
+                Each file can be up to {formatFileSize(MAX_UPLOAD_BYTES)}. Choose 1 to 10 total
+                downloads before uploading. The link expires after 24 hours, or when the download
+                limit is reached, whichever comes first.
+              </p>
+              <p className="mt-3 leading-7 text-muted-foreground">
+                Anyone with the link or file code can download while it is available. Repeat
+                downloads count toward the limit, so share only with your intended recipients
+                and keep your own copy.
+              </p>
             </section>
           </article>
 
-          <aside className="rounded-xl border border-border bg-secondary/40 p-5">
-            <h2 className="text-xl font-semibold text-foreground">More sharing pages</h2>
+          <aside className="border-t border-border pt-5 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+            <h2 className="text-xl font-semibold text-foreground">Also sharing something else?</h2>
             <div className="mt-4 space-y-2">
               {useCases
                 .filter((item) => item.path !== useCase.path)
@@ -117,7 +116,7 @@ const UseCasePage = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="block rounded-lg bg-white px-3 py-2 text-sm font-medium text-foreground hover:text-primary"
+                    className="block py-2 text-sm font-medium text-foreground hover:text-primary hover:underline"
                   >
                     {item.title}
                   </Link>
@@ -133,4 +132,3 @@ const UseCasePage = () => {
 };
 
 export default UseCasePage;
-

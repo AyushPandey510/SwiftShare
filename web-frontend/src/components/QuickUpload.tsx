@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { CheckCircle, ClipboardType, Download, File as FileIcon, Link2, Loader2, QrCode, Upload } from "lucide-react";
+import { Check, CheckCircle, ClipboardType, Download, File as FileIcon, Link2, Loader2, QrCode, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getQRCode, uploadFile } from "@/lib/api";
 import { copyToClipboard } from "@/lib/clipboard";
@@ -21,8 +21,8 @@ const downloadOptions = Array.from({ length: 10 }, (_, index) => index + 1);
 const QuickUpload = ({
   compact = false,
   defaultMode = "file",
-  title = "Upload and share a file now",
-  description = "Choose a file or paste text, set the allowed download count, and get a share link.",
+  title = "Share files online",
+  description = "Send a file or pasted text with a temporary download link. Free to share, easy to receive, no account needed.",
 }: QuickUploadProps) => {
   const [mode, setMode] = useState<UploadMode>(defaultMode);
   const [isUploading, setIsUploading] = useState(false);
@@ -46,7 +46,7 @@ const QuickUpload = ({
     if (file.size > MAX_UPLOAD_BYTES) {
       toast({
         title: "File too large",
-        description: `SwiftShare currently accepts files up to ${limitLabel}.`,
+        description: `Choose a file no larger than ${limitLabel}, or compress it before uploading.`,
         variant: "destructive",
       });
       return;
@@ -67,12 +67,12 @@ const QuickUpload = ({
         setQrUrl(url);
         toast({
           title: "Ready to share",
-          description: `"${file.name}" has a download link and QR code.`,
+          description: `Your download link for "${file.name}" is ready to send.`,
         });
       } else {
         toast({
           title: "Upload failed",
-          description: result.error || "The backend did not accept this upload.",
+          description: result.error || "Your file could not be uploaded. Please try again.",
           variant: "destructive",
         });
       }
@@ -152,7 +152,7 @@ const QuickUpload = ({
           <p className="mb-3 text-base font-semibold uppercase tracking-wide text-primary">
             SwiftShare
           </p>
-          <h1 className="text-4xl font-bold text-foreground md:text-6xl">
+          <h1 className="break-words text-3xl font-bold text-foreground sm:text-4xl md:text-6xl">
             {title}
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-lg text-muted-foreground">
@@ -165,88 +165,80 @@ const QuickUpload = ({
             <button
               type="button"
               aria-pressed={mode === "file"}
-              className={`relative flex items-center justify-between rounded-xl border px-5 py-4 text-left transition-all ${
+              className={`relative grid min-w-0 grid-cols-[minmax(0,1fr)_1.25rem] items-center gap-3 rounded-xl border px-4 py-4 text-left transition-colors sm:px-5 ${
                 mode === "file"
                   ? "border-primary bg-primary text-primary-foreground shadow-md"
                   : "border-border bg-white text-foreground hover:border-primary/50"
               }`}
               onClick={() => setMode("file")}
             >
-              <span className="flex items-center gap-3">
+              <span className="flex min-w-0 items-center gap-3">
                 <span
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                     mode === "file" ? "bg-white/15" : "bg-primary/10 text-primary"
                   }`}
                 >
                   <Upload className="h-5 w-5" />
                 </span>
-                <span>
+                <span className="min-w-0 [overflow-wrap:anywhere]">
                   <span className="block text-base font-bold">File upload</span>
                   <span className={`block text-xs ${mode === "file" ? "text-white/80" : "text-muted-foreground"}`}>
-                    APK, JSON, PDF, ZIP, media
+                    Documents, media, archives
                   </span>
                 </span>
               </span>
-              {mode === "file" && (
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-primary">
-                  Active
-                </span>
-              )}
+              <Check aria-hidden="true" className={`h-5 w-5 ${mode === "file" ? "visible" : "invisible"}`} />
             </button>
             <button
               type="button"
               aria-pressed={mode === "text"}
-              className={`relative flex items-center justify-between rounded-xl border px-5 py-4 text-left transition-all ${
+              className={`relative grid min-w-0 grid-cols-[minmax(0,1fr)_1.25rem] items-center gap-3 rounded-xl border px-4 py-4 text-left transition-colors sm:px-5 ${
                 mode === "text"
                   ? "border-primary bg-primary text-primary-foreground shadow-md"
                   : "border-border bg-white text-foreground hover:border-primary/50"
               }`}
               onClick={() => setMode("text")}
             >
-              <span className="flex items-center gap-3">
+              <span className="flex min-w-0 items-center gap-3">
                 <span
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                     mode === "text" ? "bg-white/15" : "bg-primary/10 text-primary"
                   }`}
                 >
                   <ClipboardType className="h-5 w-5" />
                 </span>
-                <span>
+                <span className="min-w-0 [overflow-wrap:anywhere]">
                   <span className="block text-base font-bold">Paste text</span>
                   <span className={`block text-xs ${mode === "text" ? "text-white/80" : "text-muted-foreground"}`}>
-                    Notes, logs, commands, snippets
+                    Notes, code, snippets
                   </span>
                 </span>
               </span>
-              {mode === "text" && (
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-primary">
-                  Active
-                </span>
-              )}
+              <Check aria-hidden="true" className={`h-5 w-5 ${mode === "text" ? "visible" : "invisible"}`} />
             </button>
           </div>
 
-          <div className="grid gap-0 lg:grid-cols-[1fr_280px]">
-            <div className="p-6 md:p-8">
+          <div className="grid grid-cols-1 gap-0 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <div className="min-w-0 p-4 sm:p-6 md:p-8">
               {uploadedFile ? (
                 <div>
-                  <div className="mb-4 flex items-center gap-2 text-green-700">
-                    <CheckCircle className="h-6 w-6" />
-                    <span className="text-lg font-semibold text-foreground">Share link ready</span>
+                  <div className="mb-4 flex items-start gap-2 text-green-700">
+                    <CheckCircle className="mt-0.5 h-6 w-6 shrink-0" />
+                    <span className="min-w-0 text-lg font-semibold text-foreground">Your file is ready to share</span>
                   </div>
 
-                  <div className="rounded-xl border border-border bg-secondary/40 p-5">
+                  <div className="min-w-0 space-y-4">
                     <div className="flex justify-center">
                       {qrUrl ? (
-                        <div className="flex flex-col items-center rounded-xl border border-green-200 bg-white p-4">
+                        <div className="flex w-full max-w-[208px] min-w-0 flex-col items-center rounded-lg border border-green-200 bg-white p-4">
                           <img
                             src={qrUrl}
                             alt="QR code linking to the shared file"
-                            className="h-40 w-40"
+                            className="aspect-square h-auto w-full max-w-40 object-contain"
                           />
-                          <p className="mt-3 flex items-center gap-1 text-sm font-medium text-green-700">
-                            <QrCode className="h-4 w-4" />
-                            Scan to open the share link
+                          <p className="mt-3 flex items-center justify-center gap-1 text-center text-sm font-medium text-green-700">
+                            <QrCode className="h-4 w-4 shrink-0" />
+                            Scan to download
                           </p>
                         </div>
                       ) : (
@@ -263,28 +255,34 @@ const QuickUpload = ({
                       )}
                     </div>
 
-                    <div className="mt-5 flex items-center gap-2 text-sm text-foreground">
-                      <FileIcon className="h-4 w-4 text-primary" />
-                      <span className="truncate font-medium">{uploadedFile.filename}</span>
-                      <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                    <div className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)] items-start gap-x-2 gap-y-1 text-sm text-foreground">
+                      <FileIcon className="mt-0.5 h-4 w-4 text-primary" />
+                      <span className="min-w-0 font-medium [overflow-wrap:anywhere]">{uploadedFile.filename}</span>
+                      <span className="col-start-2 text-xs text-muted-foreground">
                         {formatFileSize(uploadedFile.size)}
                       </span>
                     </div>
 
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Code:{" "}
+                      File code:{" "}
                       <code className="rounded bg-white px-1 py-0.5 font-mono text-xs text-foreground">
                         {uploadedFile.code}
                       </code>
                     </p>
 
-                    <div className="mt-3 flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2">
+                    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-white pl-3 pr-1">
                       <Link2 className="h-4 w-4 shrink-0 text-primary" />
-                      <span className="truncate text-xs text-muted-foreground">{uploadedFile.url}</span>
+                      <input
+                        aria-label="Download link"
+                        readOnly
+                        value={uploadedFile.url}
+                        onFocus={(event) => event.currentTarget.select()}
+                        className="min-w-0 flex-1 bg-transparent py-3 text-base text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+                      />
                       <button
                         type="button"
                         onClick={copyShareLink}
-                        className="ml-auto shrink-0 text-xs font-semibold text-primary hover:underline"
+                        className="min-h-11 shrink-0 px-3 text-sm font-semibold text-primary hover:underline"
                       >
                         Copy
                       </button>
@@ -295,13 +293,14 @@ const QuickUpload = ({
                         href={uploadedFile.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex w-full items-center justify-center rounded-md border border-border bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary/50"
+                        className="flex min-h-11 min-w-0 w-full items-center justify-center rounded-md border border-border bg-white px-3 py-2 text-center text-sm font-medium text-foreground hover:bg-secondary/50"
                       >
-                        <Download className="mr-2 h-4 w-4" />
-                        Open file
+                        <Download className="mr-2 h-4 w-4 shrink-0" />
+                        Download file
                       </a>
                       <Button
                         variant="outline"
+                        className="h-auto min-h-11 min-w-0 whitespace-normal px-3 py-2"
                         onClick={() => {
                           setUploadedFile(null);
                           setQrUrl((previous) => {
@@ -310,7 +309,7 @@ const QuickUpload = ({
                           });
                         }}
                       >
-                        Share another
+                        Share another file
                       </Button>
                     </div>
                   </div>
@@ -321,7 +320,7 @@ const QuickUpload = ({
                   tabIndex={0}
                   aria-label="Upload a file by browsing or dropping it here"
                   aria-disabled={isUploading}
-                  className={`relative cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  className={`relative min-w-0 cursor-pointer rounded-xl border-2 border-dashed px-4 py-8 text-center transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-10 ${
                     dragActive
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/60 hover:bg-secondary/40"
@@ -353,10 +352,12 @@ const QuickUpload = ({
                     )}
                   </div>
                   <p className="text-xl font-semibold text-foreground">
-                    Drop a file here or click to browse
+                    {isUploading ? "Uploading your file..." : "Choose a file or drop it here"}
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Supports APK, JSON, PDF, ZIP, images, videos, and documents up to {limitLabel}.
+                    {isUploading
+                      ? "Keep this page open until your download link is ready."
+                      : `One file per upload, up to ${limitLabel}.`}
                   </p>
                 </div>
               ) : (
@@ -365,52 +366,53 @@ const QuickUpload = ({
                     value={textValue}
                     onChange={(event) => setTextValue(event.target.value)}
                     aria-label="Text to share"
-                    className="min-h-[220px] w-full rounded-xl border border-input bg-background p-4 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="Paste copied text, JSON, logs, notes, commands, or anything you want to share..."
+                    className="min-h-[220px] min-w-0 w-full rounded-xl border border-input bg-background p-4 text-base outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+                    placeholder="Paste your notes, code, or text..."
                   />
                   <input
                     value={textFilename}
                     onChange={(event) => setTextFilename(event.target.value)}
                     aria-label="File name for the shared text"
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="min-w-0 w-full rounded-lg border border-input bg-background px-3 py-2 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                     placeholder="Filename, for example debug-log.txt"
                   />
-                  <Button onClick={handleTextUpload} disabled={isUploading} className="w-full">
+                  <Button onClick={handleTextUpload} disabled={isUploading} className="h-auto min-h-11 w-full whitespace-normal px-3 py-2">
                     {isUploading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       <Link2 className="mr-2 h-4 w-4" />
                     )}
-                    Create text share link
+                    {isUploading ? "Uploading your text..." : "Create download link"}
                   </Button>
                 </div>
               )}
             </div>
 
-            <aside className="border-t border-border bg-secondary/50 p-6 lg:border-l lg:border-t-0">
+            <aside className="min-w-0 border-t border-border bg-secondary/50 p-4 sm:p-6 lg:border-l lg:border-t-0">
               <label className="text-sm font-semibold text-foreground" htmlFor="max-downloads">
-                Allowed downloads
+                {uploadedFile ? "Download limit" : "Total downloads"}
               </label>
               <select
                 id="max-downloads"
-                value={maxDownloads}
+                value={uploadedFile?.maxDownloads ?? maxDownloads}
+                disabled={isUploading || Boolean(uploadedFile)}
                 onChange={(event) => setMaxDownloads(Number(event.target.value))}
-                className="mt-2 w-full rounded-lg border border-input bg-white px-3 py-2 text-sm"
+                className="mt-2 min-h-11 min-w-0 w-full rounded-lg border border-input bg-white px-3 py-2 text-base sm:text-sm"
               >
                 {downloadOptions.map((count) => (
                   <option key={count} value={count}>
-                    {count} {count === 1 ? "person" : "people"}
+                    {count} {count === 1 ? "download" : "downloads"}
                   </option>
                 ))}
               </select>
 
               <div className="mt-6 space-y-3 text-sm text-muted-foreground">
-                <p>Files expire after 24 hours.</p>
-                <p>Download access is limited to your selected count.</p>
+                <p>{uploadedFile ? "This limit was set when you uploaded." : "Choose your limit before uploading."} Repeat downloads count, too.</p>
+                <p>Links expire after 24 hours or when the download limit is reached.</p>
                 <p>
-                  The app limit is {limitLabel}; heavy production traffic should move file storage
-                  to object storage.
+                  Anyone with the link or file code can download. Share only with your intended recipients.
                 </p>
+                {uploadedFile && <p>Downloading your own file also uses one download.</p>}
               </div>
             </aside>
           </div>

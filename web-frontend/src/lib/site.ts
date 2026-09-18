@@ -45,8 +45,12 @@ export const useCases = [
     title: "Share files online",
     shortTitle: "Files",
     description:
-      "Upload a file, choose how many downloads are allowed, and share a private link that expires automatically.",
-    h1: "Share files online with an expiring download link",
+      "Send a file with a link. No account to create, no shared folder to manage, and up to 250 MB per file.",
+    h1: "Share files online",
+    detailTitle: "A file to send. A link to share.",
+    detail: "Send a project handoff, a document, or a file for another device. Each upload gets its own download link, QR code, and six-character file code.",
+    tipTitle: "Sending more than one file?",
+    tip: "Put your files in a ZIP archive before uploading to share them together. Keep a copy of the originals: SwiftShare links are temporary.",
     keywords: [
       "share files online",
       "send files",
@@ -63,8 +67,12 @@ export const useCases = [
     title: "Share copied text",
     shortTitle: "Text",
     description:
-      "Paste notes, snippets, commands, JSON, logs, or copied text and turn it into a downloadable share link.",
+      "Turn notes, code snippets, or copied text into a file you can share with a link.",
     h1: "Paste text and share it as a file",
+    detailTitle: "Give your text a file of its own",
+    detail: "Share meeting notes, a command, or a log without squeezing it into a chat message. Your recipient downloads the text as a file, ready to open in their preferred editor.",
+    tipTitle: "Name it for the person receiving it",
+    tip: "Use a name such as meeting-notes.txt or debug-log.txt so the file is easy to recognize later. Check logs and snippets for passwords or personal information before sharing.",
     keywords: [
       "share text online",
       "paste and share text",
@@ -84,8 +92,12 @@ export const useCases = [
     title: "Share APK files",
     shortTitle: "APK",
     description:
-      "Send Android APK builds to testers or teammates with a simple download link and controlled download count.",
+      "Get your Android build to testers and teammates with a temporary download link or QR code.",
     h1: "Share APK files with testers",
+    detailTitle: "Send the build your team needs",
+    detail: "Share an APK for a test session or a quick review. Testers can download the file on their Android device without creating a SwiftShare account.",
+    tipTitle: "Make each build easy to identify",
+    tip: "Include the app name and version in the filename. Downloading an APK does not install it; recipients manage installation and device permissions separately.",
     keywords: [
       "share apk",
       "send apk file",
@@ -107,8 +119,12 @@ export const useCases = [
     title: "Share JSON files",
     shortTitle: "JSON",
     description:
-      "Upload JSON files or paste JSON text for quick sharing during debugging, API testing, and handoffs.",
-    h1: "Share JSON files and pasted JSON",
+      "Share a JSON file or paste an API response, sample dataset, or configuration for a teammate to download.",
+    h1: "Share JSON files",
+    detailTitle: "Keep the context with the data",
+    detail: "Pass along a sample response for debugging or a dataset for review. Upload an existing JSON file, or paste the text and give it a filename ending in .json.",
+    tipTitle: "Check the content before sharing",
+    tip: "SwiftShare shares your text as provided; it does not validate or format JSON. Remove API keys, tokens, and personal data from your sample first.",
     keywords: [
       "share json",
       "json file sharing",
@@ -126,11 +142,15 @@ export const useCases = [
   },
   {
     path: "/large-file-transfer",
-    title: `Large file transfer up to ${formatFileSize(MAX_UPLOAD_BYTES)}`,
+    title: `Send files up to ${formatFileSize(MAX_UPLOAD_BYTES)}`,
     shortTitle: "Large Files",
     description:
-      `Share larger files up to the current ${formatFileSize(MAX_UPLOAD_BYTES)} application limit. Production hosting may need object storage for heavy traffic.`,
-    h1: `Large file transfer up to ${formatFileSize(MAX_UPLOAD_BYTES)}`,
+      `Send a video, archive, or project file up to ${formatFileSize(MAX_UPLOAD_BYTES)} with a link you can share in any message.`,
+    h1: `Send files up to ${formatFileSize(MAX_UPLOAD_BYTES)}`,
+    detailTitle: "More room for the file you need to send",
+    detail: "Share a presentation, a collection of files in a ZIP archive, or a video clip without attaching it to an email. Your recipient downloads it from the link.",
+    tipTitle: "Before sending a larger file",
+    tip: "Keep this page open until your upload finishes. If your file is over 250 MB, compress it or split it into smaller files before uploading.",
     keywords: [
       "large file transfer",
       "send large files",
@@ -151,8 +171,12 @@ export const useCases = [
     title: "Share PDF files",
     shortTitle: "PDF",
     description:
-      "Upload PDF documents and share them through controlled links. This page is for sharing PDFs, not editing or converting them yet.",
-    h1: "Share PDF files with a simple link",
+      "Send a report, resume, or reading material as a PDF with a temporary download link.",
+    h1: "Share PDF files",
+    detailTitle: "Your document, ready to pass along",
+    detail: "Share a finished PDF for someone to read or keep. Recipients download the file and open it in their usual PDF reader.",
+    tipTitle: "Send the version you want them to keep",
+    tip: "Check your PDF before uploading and give it a recognizable filename. A shared link delivers that version; upload again to share a revised document.",
     keywords: [
       "share pdf",
       "send pdf",
@@ -172,8 +196,12 @@ export const useCases = [
     title: "Share video files",
     shortTitle: "Video",
     description:
-      "Upload MP4, MOV, MKV, or other video files and send a temporary download link that expires after 24 hours.",
-    h1: "Share video files with a download link",
+      "Send a video clip, screen recording, or edit for review. Share MP4, MOV, and other video files up to 250 MB.",
+    h1: "Share video files",
+    detailTitle: "Send the clip, keep the conversation moving",
+    detail: "Pass a recording to a teammate or send an edit for feedback. Recipients download the uploaded file to watch on their own device.",
+    tipTitle: "Choose a file your recipient can play",
+    tip: "SwiftShare does not convert or stream videos. Check the file format and size before uploading; trim or compress larger videos to stay within 250 MB.",
     keywords: [
       "share video files",
       "send video online",
@@ -193,8 +221,12 @@ export const useCases = [
     title: "Share audio & music files",
     shortTitle: "Audio",
     description:
-      "Share MP3, WAV, and other audio tracks or recordings with a temporary link and a controlled download count.",
-    h1: "Share audio and music files online",
+      "Pass along a voice recording, podcast draft, or music track with a temporary download link.",
+    h1: "Share audio and music files",
+    detailTitle: "Let someone hear what you are working on",
+    detail: "Send an MP3, WAV, or another audio file for listening or review. Recipients download it to play in their preferred audio app.",
+    tipTitle: "Keep the version clear",
+    tip: "Add a title or version number to the filename so listeners know which recording they received. Share recordings and music you have permission to distribute.",
     keywords: [
       "share audio files",
       "send audio online",
@@ -214,8 +246,12 @@ export const useCases = [
     title: "Share images & photos",
     shortTitle: "Images",
     description:
-      "Upload JPG, PNG, WebP, and other image files and share them through an expiring download link with a QR code.",
-    h1: "Share images and photos with a link",
+      "Share a photo, screenshot, or design file as a download. Send JPG, PNG, WebP, and other image formats.",
+    h1: "Share images and photos",
+    detailTitle: "Send the image as a file",
+    detail: "Hand over a screenshot for feedback or an image for a project. SwiftShare transfers the uploaded file without resizing it or converting its format.",
+    tipTitle: "Sharing a set of photos?",
+    tip: "Put the images in a ZIP archive to send them together in one upload. The archive must fit within the 250 MB file limit.",
     keywords: [
       "share images online",
       "send photos",
@@ -235,8 +271,12 @@ export const useCases = [
     title: "Share ZIP & compressed files",
     shortTitle: "ZIP",
     description:
-      "Upload ZIP archives and compressed folders, then send a temporary link that expires automatically after 24 hours.",
-    h1: "Share ZIP and compressed files with a link",
+      "Bundle a folder or several files into one archive and send them together with a download link.",
+    h1: "Share ZIP and compressed files",
+    detailTitle: "One archive for everything that belongs together",
+    detail: "Keep project files, documents, or photos together in a ZIP archive. Your recipient downloads the archive and extracts it on their device.",
+    tipTitle: "Prepare your archive before uploading",
+    tip: "Compress the files on your device and check that the finished archive is no larger than 250 MB. SwiftShare transfers archives without opening or extracting them.",
     keywords: [
       "share zip files",
       "send zip archive",
@@ -256,8 +296,12 @@ export const useCases = [
     title: "Share document files",
     shortTitle: "Docs",
     description:
-      "Share Word, Excel, PowerPoint, and other document files with a temporary download link and controlled access.",
-    h1: "Share Word, Excel, and document files",
+      "Send a Word document, Excel workbook, or PowerPoint presentation for someone to download and use.",
+    h1: "Share documents and presentations",
+    detailTitle: "Hand over the file they need to work with",
+    detail: "Send a draft for review, a spreadsheet for a teammate, or slides for a meeting. Recipients get the uploaded document to open in a compatible app.",
+    tipTitle: "Keep everyone on the same version",
+    tip: "Include a date or version in the filename. Changes made after uploading are not synced to the shared file; upload the updated document to create a new link.",
     keywords: [
       "share documents online",
       "send word documents",
@@ -273,4 +317,3 @@ export const useCases = [
     ],
   },
 ] as const;
-

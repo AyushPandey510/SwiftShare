@@ -7,19 +7,19 @@ import { Link } from "react-router-dom";
 const sections = [
   {
     heading: "Information we handle",
-    body: "SwiftShare is a temporary file sharing tool. When you upload a file or paste text, we store the file contents and basic metadata (file name, size, a short access code, download date, and expiry time) in order to serve the share link back to you and to recipients. We do not require accounts, profiles, or payment information.",
+    body: "When you upload a file or paste text, SwiftShare stores the content so recipients can download it. We also handle the filename, file size and type, upload and expiry times, file code, and download count. You do not need to create an account or provide payment information.",
   },
   {
-    heading: "How long we keep files",
-    body: "Uploaded files expire automatically after 24 hours and are removed from temporary storage. Downloads are also limited to the count you choose (between 1 and 10) before you create the share link. Data is not retained for longer than needed to deliver the service.",
+    heading: "File availability and expiry",
+    body: "Links expire 24 hours after upload, or stop accepting downloads when the limit you selected is reached. Expiry prevents further access through the link; it does not remove copies that recipients have already downloaded. SwiftShare is temporary storage, so keep a copy of any file you need later.",
   },
   {
-    heading: "What we do not collect",
-    body: "We do not collect names, email addresses, phone numbers, or browsing profiles. We do not sell personal data. Because files are temporary and self-expiring, no permanent cloud storage of your uploads takes place.",
+    heading: "Information you choose to share",
+    body: "SwiftShare does not ask for your name, email address, or phone number to share a file. Files and pasted text may still contain personal information you choose to include. Review your content and filenames before uploading.",
   },
   {
     heading: "Sharing your data",
-    body: "File contents are only shared through the link and access code you generate. Anyone who receives your share link can download the file until the link expires or the download limit is reached, so only share links with people you intend to receive the file.",
+    body: "Anyone with a file's download link, QR code, or file code can access it while downloads remain available. These details can be forwarded. A download limit counts downloads, not individual people, and does not verify a recipient's identity.",
   },
   {
     heading: "Third-party services",
@@ -27,7 +27,7 @@ const sections = [
   },
   {
     heading: "Changes and contact",
-    body: "This policy may be updated from time to time. The effective date below reflects the most recent revision. Questions can be sent through the project repositories linked in the SwiftShare footer.",
+    body: "We may update this policy as the service changes. The date on this page shows the latest revision. You can reach the project maintainer through the GitHub profile linked in the footer. Do not post private file links or personal information in public discussions.",
   },
 ];
 
@@ -54,7 +54,7 @@ const PrivacyPolicyPage = () => {
           SwiftShare Policy
         </p>
         <h1 className="text-4xl font-bold text-foreground">Privacy Policy</h1>
-        <p className="mt-3 text-sm text-muted-foreground">Last updated: September 17, 2026</p>
+        <p className="mt-3 text-sm text-muted-foreground">Last updated: September 18, 2026</p>
         <p className="mt-6 leading-7 text-muted-foreground">
           SwiftShare provides free, temporary file sharing with expiring links. This page explains
           what happens to the files you upload and the limited data involved in sharing them. Read

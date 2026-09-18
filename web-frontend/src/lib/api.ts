@@ -1,4 +1,5 @@
 import { FileData } from '@/types/file';
+import { formatFileSize, MAX_UPLOAD_BYTES } from '@/lib/site';
 
 const DEFAULT_API_PORT = 3001;
 
@@ -42,27 +43,27 @@ export const uploadFile = async (
     });
 
     if (!response.ok) {
-      let message = `HTTP error! status: ${response.status}`;
-      try {
-        const body = await response.json();
-        if (body?.error) message = body.error;
-      } catch {
-        // ignore unparseable error bodies
-      }
-      throw new Error(message);
+      return {
+        success: false,
+        error: response.status === 413
+          ? `This upload is too large. Choose a file under ${formatFileSize(MAX_UPLOAD_BYTES)} and try again.`
+          : response.status === 429
+            ? 'There have been too many upload attempts. Wait a moment and try again.'
+            : 'Your file could not be uploaded. Please try again in a moment.',
+      };
     }
 
     const result = await response.json();
     return {
       success: Boolean(result.success),
       data: result.data ?? result.file,
-      error: result.error,
+      error: result.success ? undefined : 'Your file could not be uploaded. Please try again.',
     };
   } catch (error) {
     console.error('Upload error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Upload failed'
+      error: 'We could not complete your upload. Check your connection and try again.'
     };
   }
 };
@@ -73,16 +74,31 @@ export const getFileByCode = async (code: string): Promise<ApiResponse<FileData>
     const response = await fetch(`${API_BASE_URL}/api/file/${code}`);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      return {
+        success: false,
+        error: response.status === 404
+          ? 'We could not find that file. Check the code or ask the sender for a new link.'
+          : response.status === 410
+            ? 'This file is no longer available. Ask the sender to share it again.'
+            : 'We could not look up your file. Please try again in a moment.',
+      };
     }
 
     const result = await response.json();
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error === 'File expired'
+          ? 'This link has expired. Ask the sender to share the file again.'
+          : 'We could not find that file. Check the code or ask the sender for a new link.',
+      };
+    }
     return result;
   } catch (error) {
     console.error('Get file error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to get file'
+      error: 'We could not look up your file. Check your connection and try again.'
     };
   }
 };

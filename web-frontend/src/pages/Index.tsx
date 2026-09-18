@@ -10,38 +10,44 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { FILE_SHARING_KEYWORDS, useCases } from "@/lib/site";
+import { FILE_SHARING_KEYWORDS, formatFileSize, MAX_UPLOAD_BYTES, useCases } from "@/lib/site";
 import { Link } from "react-router-dom";
-
-const languageHeadings = [
-  ["English", "Share files online"],
-  ["Hindi", "Online file share karein"],
-  ["Spanish", "Compartir archivos en linea"],
-  ["French", "Partager des fichiers en ligne"],
-  ["German", "Dateien online teilen"],
-  ["Portuguese", "Compartilhar arquivos online"],
-];
 
 const faqs = [
   {
     question: "Is SwiftShare free to use?",
     answer:
-      "Yes, sharing files and pasted text with SwiftShare is completely free. There is no account or signup required, and every share link expires automatically after 24 hours.",
+      "Yes. You can upload files, share pasted text, and download shared files for free. Neither you nor your recipient needs an account.",
   },
   {
     question: "What is the maximum file size I can share?",
     answer:
-      "You can currently upload files up to 250 MB. Larger uploads are possible for heavy production traffic once storage moves to object storage.",
+      `You can share one file up to ${formatFileSize(MAX_UPLOAD_BYTES)} per upload. To send several files together, put them in a ZIP archive that fits within this limit.`,
   },
   {
-    question: "How do I control who can download my file?",
+    question: "How does the download limit work?",
     answer:
-      "Before creating the share link, choose the allowed download count from 1 to 10 people. The link stops working once that limit is reached or after 24 hours, whichever comes first.",
+      "Choose 1 to 10 total downloads before uploading. Each download uses one allowance, including repeat downloads by the same person. A download that starts but is interrupted can also count. The link expires when the limit is reached or 24 hours after upload, whichever comes first.",
   },
   {
     question: "Do people need to sign up to download a shared file?",
     answer:
       "No. Recipients can open the temporary link or scan the QR code to download the file without creating an account.",
+  },
+  {
+    question: "Who can access a shared file?",
+    answer:
+      "Anyone with the link, QR code, or file code can download it while it is available. The download limit does not identify individual recipients. Share these details only with the people you want to receive the file.",
+  },
+  {
+    question: "What happens to text I paste?",
+    answer:
+      "Your text becomes a downloadable file with the filename you choose. Recipients can open it in a text editor. The same file size, download limit, and expiry apply as for uploaded files.",
+  },
+  {
+    question: "Can I recover a file after its link expires?",
+    answer:
+      "An expired link cannot be used to download the file. Keep your original copy, or ask the sender to upload it again for a new link. Files already downloaded stay on the recipient's device.",
   },
   {
     question: "What kinds of files can I share?",
@@ -67,7 +73,7 @@ const Index = () => {
     <div className="min-h-screen">
       <SEO
         title="Free file sharing with expiring links"
-        description="Upload files or paste text, choose 1 to 10 allowed downloads, and share an expiring SwiftShare link."
+        description="Share files up to 250 MB or paste text to create a download link. Free, no signup, with 1 to 10 downloads and a 24-hour expiry."
         keywords={[
           "free file sharing",
           "share files online",
@@ -84,11 +90,10 @@ const Index = () => {
         <div className="mx-auto max-w-6xl">
           <div className="mb-8 max-w-3xl">
             <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-              File sharing pages for common jobs
+              What do you need to send?
             </h2>
             <p className="mt-3 text-muted-foreground">
-              SwiftShare is being organized around real use cases so search engines and users can
-              understand the exact job each page solves.
+              From a few lines of text to a project archive, share the file your recipient needs.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -109,24 +114,6 @@ const Index = () => {
       <FeaturesSection />
       <HowItWorks />
 
-      <section className="bg-secondary/30 px-4 py-16">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-foreground">
-            People search for file sharing in many languages
-          </h2>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {languageHeadings.map(([language, heading]) => (
-              <div key={language} className="rounded-lg border border-border bg-white p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-                  {language}
-                </p>
-                <h3 className="mt-2 text-lg font-semibold text-foreground">{heading}</h3>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="px-4 py-16">
         <div className="mx-auto max-w-4xl">
           <div className="mb-8 max-w-3xl">
@@ -134,8 +121,7 @@ const Index = () => {
               Frequently asked questions
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Quick answers about free file sharing, upload limits, download controls, and how
-              SwiftShare links expire.
+              File sizes, download limits, and what happens after you share.
             </p>
           </div>
           <Accordion type="single" collapsible className="rounded-xl border border-border bg-white px-4">

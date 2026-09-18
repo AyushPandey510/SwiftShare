@@ -15,8 +15,8 @@ const Footer = () => {
               <span className="text-xl font-bold">SwiftShare</span>
             </div>
             <p className="max-w-md text-sm leading-6 text-gray-400">
-              Temporary file sharing for quick handoffs. Upload a file or pasted text, limit access
-              to 1-10 downloads, and share the generated link.
+              Send a file. Share a link. Get on with your day.
+              Free, temporary sharing for files and text, with no account needed.
             </p>
             <div className="mt-5 flex gap-3">
               <a href="https://x.com/AyushPande28353" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 hover:bg-primary" aria-label="X">
@@ -32,7 +32,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h2 className="mb-4 font-semibold">Use cases</h2>
+            <h2 className="mb-4 font-semibold">Share with SwiftShare</h2>
             <ul className="space-y-2">
               {useCases.slice(0, 6).map((useCase) => (
                 <li key={useCase.path}>
@@ -45,12 +45,12 @@ const Footer = () => {
           </div>
 
           <div>
-            <h2 className="mb-4 font-semibold">Current limits</h2>
+            <h2 className="mb-4 font-semibold">Every share includes</h2>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>Maximum file size: {formatFileSize(MAX_UPLOAD_BYTES)}</li>
-              <li>Allowed downloads: 1-10</li>
-              <li>File expiry: 24 hours</li>
-              <li>No permanent cloud storage</li>
+              <li>Up to {formatFileSize(MAX_UPLOAD_BYTES)} per file</li>
+              <li>Your choice of 1 to 10 total downloads</li>
+              <li>A link that expires within 24 hours</li>
+              <li>A QR code and file code</li>
             </ul>
           </div>
 
@@ -85,4 +85,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

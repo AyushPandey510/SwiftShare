@@ -3,30 +3,22 @@ import { Clock, FileUp, Users } from "lucide-react";
 const features = [
   {
     icon: FileUp,
-    title: "Upload files or pasted text",
+    title: "Files and text, ready to send",
     description:
-      "Share APK, JSON, PDF, ZIP, media, documents, or pasted text from one upload panel.",
+      "Send a document, photo, recording, or archive. Turn pasted notes and snippets into a downloadable file, too.",
   },
   {
     icon: Users,
     title: "Choose 1 to 10 downloads",
     description:
-      "Pick how many people can download the shared file. Unlimited public links are intentionally not offered.",
+      "Set a total download limit for each upload. Once those downloads are used, the link stops accepting new downloads.",
   },
   {
     icon: Clock,
-    title: "Temporary links",
+    title: "Share for the next 24 hours",
     description:
-      "Shared files expire after 24 hours, keeping SwiftShare focused on quick handoffs instead of permanent storage.",
+      "Links expire 24 hours after upload, or sooner if the download limit is reached. Keep your own copy for later.",
   },
-];
-
-const futureFeatures = [
-  "QR access",
-  "Mobile app distribution",
-  "Web dashboard",
-  "Public API access",
-  "PDF editing or conversion tools",
 ];
 
 const FeaturesSection = () => {
@@ -35,11 +27,10 @@ const FeaturesSection = () => {
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 max-w-3xl">
           <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-            Features that work today
+            Easy to send. Easy to receive.
           </h2>
           <p className="mt-3 text-muted-foreground">
-            The page now describes only the upload and sharing workflow that is currently wired to
-            the backend.
+            No accounts or shared folders. Just a download link for the file you want to pass along.
           </p>
         </div>
 
@@ -55,19 +46,6 @@ const FeaturesSection = () => {
           ))}
         </div>
 
-        <div className="mt-8 rounded-xl border border-dashed border-border bg-white p-5">
-          <h3 className="text-lg font-semibold text-foreground">Parked for later</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            These are intentionally not promoted as live features yet:
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {futureFeatures.map((feature) => (
-              <span key={feature} className="rounded-full bg-secondary px-3 py-1 text-sm text-muted-foreground">
-                {feature}
-              </span>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
