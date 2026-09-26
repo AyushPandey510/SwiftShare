@@ -20,9 +20,22 @@ class ShareScreen extends StatefulWidget {
   State<ShareScreen> createState() => _ShareScreenState();
 }
 
+// One duration and curve for the whole File/Text switch, so the tab pill,
+// the panel fade and the height change move together.
+const Duration _modeSwitchDuration = Duration(milliseconds: 240);
+const Curve _modeSwitchCurve = Curves.easeOutCubic;
+
 class _ShareScreenState extends State<ShareScreen> {
   int _maxDownloads = 1;
   bool _textMode = false;
+
+  void _setTextMode(bool value) {
+    if (_textMode == value) return;
+    HapticFeedback.selectionClick();
+    // Close the keyboard so it doesn't resize the page mid-animation.
+    FocusScope.of(context).unfocus();
+    setState(() => _textMode = value);
+  }
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _filenameController =
       TextEditingController(text: 'swiftshare-note.txt');
@@ -68,19 +81,45 @@ class _ShareScreenState extends State<ShareScreen> {
                 _buildModeSelector(),
                 const SizedBox(height: 16),
                 AnimatedSize(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
+                  duration: _modeSwitchDuration,
+                  curve: _modeSwitchCurve,
                   alignment: Alignment.topCenter,
-                  child: AnimatedCrossFade(
-                    duration: const Duration(milliseconds: 160),
-                    firstCurve: Curves.easeOut,
-                    secondCurve: Curves.easeOut,
-                    sizeCurve: Curves.easeOutCubic,
-                    crossFadeState: _textMode
-                        ? CrossFadeState.showSecond
-                        : CrossFadeState.showFirst,
-                    firstChild: _buildFileUpload(shareProvider),
-                    secondChild: _buildTextUpload(shareProvider),
+                  clipBehavior: Clip.none, // keep the panel shadow visible
+                  child: AnimatedSwitcher(
+                    duration: _modeSwitchDuration,
+                    reverseDuration: const Duration(milliseconds: 140),
+                    switchInCurve: _modeSwitchCurve,
+                    switchOutCurve: Curves.easeInCubic,
+                    // The outgoing panel is overlaid (positioned), so only the
+                    // incoming panel decides the height: no double resize.
+                    layoutBuilder: (current, previous) => Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.topCenter,
+                      children: [
+                        for (final child in previous)
+                          Positioned(top: 0, left: 0, right: 0, child: child),
+                        if (current != null) current,
+                      ],
+                    ),
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.02),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    ),
+                    child: _textMode
+                        ? KeyedSubtree(
+                            key: const ValueKey('text-panel'),
+                            child: _buildTextUpload(shareProvider),
+                          )
+                        : KeyedSubtree(
+                            key: const ValueKey('file-panel'),
+                            child: _buildFileUpload(shareProvider),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -170,25 +209,98 @@ class _ShareScreenState extends State<ShareScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE4EAF3)),
       ),
-      child: Row(
+      child: Stack(
         children: [
-          Expanded(
-            child: _ModeTab(
-              selected: !_textMode,
-              icon: Icons.check,
-              label: 'File',
-              onTap: () => setState(() => _textMode = false),
+          // One white pill that slides between the tabs, instead of two
+          // backgrounds fading in and out (which caused the flicker).
+          Positioned.fill(
+            child: AnimatedAlign(
+              alignment:
+                  _textMode ? Alignment.centerRight : Alignment.centerLeft,
+              duration: _modeSwitchDuration,
+              curve: _modeSwitchCurve,
+              child: FractionallySizedBox(
+                widthFactor: 0.5,
+                heightFactor: 1,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(11),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-          Expanded(
-            child: _ModeTab(
-              selected: _textMode,
-              icon: Icons.notes,
-              label: 'Text',
-              onTap: () => setState(() => _textMode = true),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _ModeTab(
+                  selected: !_textMode,
+                  icon: Icons.insert_drive_file_outlined,
+                  label: 'File',
+                  onTap: () => _setTextMode(false),
+                ),
+              ),
+              Expanded(
+                child: _ModeTab(
+                  selected: _textMode,
+                  icon: Icons.notes,
+                  label: 'Text',
+                  onTap: () => _setTextMode(true),
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  /// Same look for both panels' main button, so switching doesn't blend two
+  /// differently styled buttons into each other.
+  Widget _primaryButton({
+    required bool busy,
+    required IconData icon,
+    required String label,
+    required String busyLabel,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      height: 48,
+      child: ElevatedButton.icon(
+        icon: busy
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white),
+              )
+            : Icon(icon, size: 20),
+        label: Text(busy ? busyLabel : label),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.7),
+          disabledForegroundColor: Colors.white,
+          elevation: 8,
+          shadowColor: AppColors.primary.withValues(alpha: 0.32),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Poppins',
+          ),
+        ),
+        onPressed: busy ? null : onPressed,
       ),
     );
   }
@@ -243,38 +355,12 @@ class _ShareScreenState extends State<ShareScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton.icon(
-              icon: shareProvider.isUploading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.description, size: 20),
-              label: Text(shareProvider.isUploading
-                  ? 'Uploading...'
-                  : 'Select and upload'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 10,
-                shadowColor: AppColors.primary.withValues(alpha: 0.35),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              onPressed: shareProvider.isUploading
-                  ? null
-                  : () => _pickAndUploadFile(shareProvider),
-            ),
+          _primaryButton(
+            busy: shareProvider.isUploading,
+            icon: Icons.description,
+            label: 'Select and upload',
+            busyLabel: 'Uploading...',
+            onPressed: () => _pickAndUploadFile(shareProvider),
           ),
         ],
       ),
@@ -304,35 +390,15 @@ class _ShareScreenState extends State<ShareScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton.icon(
-              icon: shareProvider.isUploading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.link, size: 20),
-              label: Text(shareProvider.isUploading
-                  ? 'Creating link...'
-                  : 'Create share link'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 8,
-                shadowColor: AppColors.primary.withValues(alpha: 0.32),
-              ),
-              onPressed: shareProvider.isUploading
-                  ? null
-                  : () {
-                      shareProvider.uploadText(
-                        _textController.text,
-                        filename: _filenameController.text,
-                        maxDownloads: _maxDownloads,
-                      );
-                    },
+          _primaryButton(
+            busy: shareProvider.isUploading,
+            icon: Icons.link,
+            label: 'Create share link',
+            busyLabel: 'Creating link...',
+            onPressed: () => shareProvider.uploadText(
+              _textController.text,
+              filename: _filenameController.text,
+              maxDownloads: _maxDownloads,
             ),
           ),
         ],
@@ -535,42 +601,35 @@ class _ModeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(11),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(11),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: selected ? AppColors.primary : const Color(0xFF8FA0B8),
-            ),
-            const SizedBox(width: 7),
-            Text(
-              label,
-              style: AppTextStyles.body2.copyWith(
-                color: selected ? AppColors.primary : const Color(0xFF64748B),
-                fontWeight: FontWeight.w800,
+    final Color color =
+        selected ? AppColors.primary : const Color(0xFF64748B);
+    // The sliding pill behind the tabs is the selection indicator, so the tab
+    // itself is transparent and has no ink splash (the splash was drawn
+    // behind the pill and showed as a grey flash).
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: TweenAnimationBuilder<Color?>(
+          tween: ColorTween(end: color),
+          duration: _modeSwitchDuration,
+          curve: _modeSwitchCurve,
+          builder: (context, animatedColor, _) => Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: animatedColor),
+              const SizedBox(width: 7),
+              Text(
+                label,
+                style: AppTextStyles.body2.copyWith(
+                  color: animatedColor,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
