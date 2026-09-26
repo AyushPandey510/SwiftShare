@@ -16,7 +16,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: const Text(
           'My QR Code',
@@ -39,7 +39,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.palette.surface,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -60,14 +60,17 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.primary,
-                          AppColors.secondary,
-                        ],
-                      ),
+                      color: context.isDark ? AppColors.primary : null,
+                      gradient: context.isDark
+                          ? null
+                          : const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.primary,
+                                AppColors.secondary,
+                              ],
+                            ),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Icon(
@@ -127,7 +130,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.1),
+                color: context.palette.surfaceMuted,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -201,7 +204,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
           Text(
             label,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: context.palette.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),

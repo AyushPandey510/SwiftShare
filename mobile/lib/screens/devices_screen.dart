@@ -12,7 +12,7 @@ class DevicesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: Consumer<DeviceProvider>(
           builder: (context, deviceProvider, child) {
@@ -63,7 +63,7 @@ class DevicesScreen extends StatelessWidget {
                 Text(
                   'Devices',
                   style: AppTextStyles.heading2.copyWith(
-                    color: Colors.black,
+                    color: context.palette.textPrimary,
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
                   ),
@@ -72,7 +72,7 @@ class DevicesScreen extends StatelessWidget {
                 Text(
                   'Find nearby devices for direct sharing.',
                   style: AppTextStyles.body2.copyWith(
-                    color: const Color(0xFF60708C),
+                    color: context.palette.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -104,12 +104,15 @@ class DevicesScreen extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.1),
-            AppColors.secondary.withValues(alpha: 0.1),
-          ],
-        ),
+        color: context.isDark ? context.palette.accentSoft : null,
+        gradient: context.isDark
+            ? null
+            : LinearGradient(
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.1),
+                  AppColors.secondary.withValues(alpha: 0.1),
+                ],
+              ),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -286,26 +289,20 @@ class DevicesScreen extends StatelessWidget {
             Icons.devices_other,
             size: 64,
             color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                context.palette.textMuted,
           ),
           const SizedBox(height: 16),
           Text(
             'No devices found',
             style: AppTextStyles.heading3.copyWith(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.7),
+              color: context.palette.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Pull to refresh or make sure other devices are running SwiftShare',
             style: AppTextStyles.body2.copyWith(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.5),
+              color: context.palette.textMuted,
             ),
             textAlign: TextAlign.center,
           ),
@@ -448,19 +445,13 @@ class _NetworkInfoItem extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.6),
+              color: context.palette.textSecondary,
             ),
             const SizedBox(width: 4),
             Text(
               title,
               style: AppTextStyles.caption.copyWith(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.6),
+                color: context.palette.textSecondary,
               ),
             ),
           ],
@@ -557,18 +548,18 @@ class _CircleActionState extends State<_CircleAction> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.palette.surface,
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE5EBF4)),
+            border: Border.all(color: context.palette.border),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF53617A).withValues(alpha: 0.08),
+                color: context.palette.shadow,
                 blurRadius: 14,
                 offset: const Offset(0, 6),
               ),
             ],
           ),
-          child: Icon(widget.icon, color: const Color(0xFF334155), size: 19),
+          child: Icon(widget.icon, color: context.palette.textBody, size: 19),
         ),
       ),
     );

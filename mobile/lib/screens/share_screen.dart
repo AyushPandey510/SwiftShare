@@ -50,7 +50,7 @@ class _ShareScreenState extends State<ShareScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: Consumer<ShareProvider>(
           builder: (context, shareProvider, child) {
@@ -62,7 +62,7 @@ class _ShareScreenState extends State<ShareScreen> {
                 Text(
                   'Share files online',
                   style: AppTextStyles.heading2.copyWith(
-                    color: Colors.black,
+                    color: context.palette.textPrimary,
                     fontSize: 28,
                     height: 1.05,
                     fontWeight: FontWeight.w800,
@@ -72,7 +72,7 @@ class _ShareScreenState extends State<ShareScreen> {
                 Text(
                   'Upload from your phone and open it on web with a temporary code, link, or QR.',
                   style: AppTextStyles.body2.copyWith(
-                    color: const Color(0xFF60708C),
+                    color: context.palette.textSecondary,
                     height: 1.45,
                     fontWeight: FontWeight.w500,
                   ),
@@ -149,11 +149,15 @@ class _ShareScreenState extends State<ShareScreen> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.secondary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            // Dark mode: solid brand colour instead of the gradient.
+            color: context.isDark ? AppColors.primary : null,
+            gradient: context.isDark
+                ? null
+                : const LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
@@ -169,7 +173,7 @@ class _ShareScreenState extends State<ShareScreen> {
         Text(
           'SwiftShare',
           style: AppTextStyles.body1.copyWith(
-            color: Colors.black,
+            color: context.palette.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
@@ -205,9 +209,9 @@ class _ShareScreenState extends State<ShareScreen> {
       height: 44,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF3FA),
+        color: context.palette.surfaceMuted,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE4EAF3)),
+        border: Border.all(color: context.palette.border),
       ),
       child: Stack(
         children: [
@@ -224,7 +228,7 @@ class _ShareScreenState extends State<ShareScreen> {
                 heightFactor: 1,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.palette.surface,
                     borderRadius: BorderRadius.circular(11),
                     boxShadow: [
                       BoxShadow(
@@ -316,11 +320,17 @@ class _ShareScreenState extends State<ShareScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF8FAFF), Color(0xFFE9ECFF)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+                color: context.isDark ? context.palette.accentSoft : null,
+                gradient: context.isDark
+                    ? null
+                    : LinearGradient(
+                        colors: [
+                          context.palette.accentSoftTop,
+                          context.palette.accentSoft,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -339,7 +349,7 @@ class _ShareScreenState extends State<ShareScreen> {
             'Choose a file from this phone',
             textAlign: TextAlign.center,
             style: AppTextStyles.heading3.copyWith(
-              color: Colors.black,
+              color: context.palette.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w800,
             ),
@@ -349,7 +359,7 @@ class _ShareScreenState extends State<ShareScreen> {
             'Up to ${AppConfig.formatFileSize(AppConfig.maxFileSize)}. The backend creates a code, QR, and download link.',
             textAlign: TextAlign.center,
             style: AppTextStyles.caption.copyWith(
-              color: const Color(0xFF9AA7BC),
+              color: context.palette.textMuted,
               height: 1.35,
               fontWeight: FontWeight.w500,
             ),
@@ -428,7 +438,7 @@ class _ShareScreenState extends State<ShareScreen> {
                 child: Text(
                   'Max downloads',
                   style: AppTextStyles.body2.copyWith(
-                    color: Colors.black,
+                    color: context.palette.textPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -437,9 +447,9 @@ class _ShareScreenState extends State<ShareScreen> {
                 height: 34,
                 padding: const EdgeInsets.only(left: 12, right: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFD),
+                  color: context.palette.surfaceSubtle,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE5EBF4)),
+                  border: Border.all(color: context.palette.border),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
@@ -464,13 +474,13 @@ class _ShareScreenState extends State<ShareScreen> {
           const SizedBox(height: 14),
           Row(
             children: [
-              const Icon(Icons.schedule, color: Color(0xFF94A3B8), size: 16),
+              Icon(Icons.schedule, color: context.palette.textMuted, size: 16),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Auto expiration',
                   style: AppTextStyles.caption.copyWith(
-                    color: const Color(0xFF8FA0B8),
+                    color: context.palette.textMuted,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -479,13 +489,13 @@ class _ShareScreenState extends State<ShareScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
+                  color: context.palette.surfaceSubtle,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '24 hours',
                   style: AppTextStyles.caption.copyWith(
-                    color: const Color(0xFF334155),
+                    color: context.palette.textBody,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -504,9 +514,9 @@ class _ShareScreenState extends State<ShareScreen> {
         icon: const Icon(Icons.file_download_outlined, size: 20),
         label: const Text('Access a shared file'),
         style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFF24324B),
-          backgroundColor: Colors.white,
-          side: const BorderSide(color: Color(0xFFDDE5F0)),
+          foregroundColor: context.palette.textBody,
+          backgroundColor: context.palette.surface,
+          side: BorderSide(color: context.palette.borderStrong),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -575,11 +585,11 @@ class _CircleAction extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.palette.surface,
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE5EBF4)),
+            border: Border.all(color: context.palette.border),
           ),
-          child: Icon(icon, color: const Color(0xFF334155), size: 20),
+          child: Icon(icon, color: context.palette.textBody, size: 20),
         ),
       ),
     );
@@ -602,7 +612,7 @@ class _ModeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color color =
-        selected ? AppColors.primary : const Color(0xFF64748B);
+        selected ? AppColors.primary : context.palette.textSecondary;
     // The sliding pill behind the tabs is the selection indicator, so the tab
     // itself is transparent and has no ink splash (the splash was drawn
     // behind the pill and showed as a grey flash).
@@ -731,10 +741,7 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.caption.copyWith(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.6),
+                color: context.palette.textSecondary,
               ),
             ),
           ),
@@ -764,12 +771,12 @@ class _Panel extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5EBF4)),
+        border: Border.all(color: context.palette.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF53617A).withValues(alpha: 0.08),
+            color: context.palette.shadow,
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),

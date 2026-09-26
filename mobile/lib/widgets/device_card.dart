@@ -93,14 +93,19 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppColors.primary.withValues(alpha: 0.15),
-                              AppColors.secondary.withValues(alpha: 0.1),
-                            ],
-                          ),
+                          color: context.isDark
+                              ? context.palette.accentSoft
+                              : null,
+                          gradient: context.isDark
+                              ? null
+                              : LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppColors.primary.withValues(alpha: 0.15),
+                                    AppColors.secondary.withValues(alpha: 0.1),
+                                  ],
+                                ),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: AppColors.primary.withValues(alpha: 0.2),
@@ -171,7 +176,7 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                             Text(
                               widget.device.address,
                               style: AppTextStyles.body2.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                color: context.palette.textSecondary,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -181,13 +186,13 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                                 Icon(
                                   Icons.access_time,
                                   size: 16,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                  color: context.palette.textSecondary,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
                                   _getDeviceProvider().formatLastSeen(widget.device.lastSeen),
                                   style: AppTextStyles.caption.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                    color: context.palette.textSecondary,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -198,7 +203,7 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                                     size: 16,
                                     color: widget.device.capabilities.contains('Encryption')
                                         ? AppColors.success
-                                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                                        : context.palette.textMuted,
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
@@ -206,7 +211,7 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                                     style: AppTextStyles.caption.copyWith(
                                       color: widget.device.capabilities.contains('Encryption')
                                           ? AppColors.success
-                                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                          : context.palette.textSecondary,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -227,7 +232,7 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                         child: Icon(
                           Icons.arrow_forward_ios,
                           size: 18,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                          color: context.palette.textSecondary,
                         ),
                       ),
                     ],

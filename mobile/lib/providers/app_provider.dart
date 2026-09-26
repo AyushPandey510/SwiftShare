@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppProvider extends ChangeNotifier {
-  bool _isDarkMode = false;
+  ThemeMode _themeMode = ThemeMode.system;
   bool _isFirstLaunch = true;
   String _deviceName = '';
   String _deviceId = '';
   
-  bool get isDarkMode => _isDarkMode;
+  /// What MaterialApp.themeMode should use: follow the phone, or force
+  /// light / dark.
+  ThemeMode get themeMode => _themeMode;
+  bool get isDarkMode => _themeMode == ThemeMode.dark;
   bool get isFirstLaunch => _isFirstLaunch;
   String get deviceName => _deviceName;
   String get deviceId => _deviceId;
@@ -18,19 +21,32 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool('isDarkMode') ?? false;
+    final savedMode = prefs.getString('themeMode');
+    if (savedMode != null) {
+      _themeMode = ThemeMode.values.firstWhere(
+        (m) => m.name == savedMode,
+        orElse: () => ThemeMode.system,
+      );
+    } else if (prefs.getBool('isDarkMode') == true) {
+      // Older versions stored a bool that the app never actually applied.
+      _themeMode = ThemeMode.dark;
+    }
     _isFirstLaunch = prefs.getBool('isFirstLaunch') ?? true;
     _deviceName = prefs.getString('deviceName') ?? '';
     _deviceId = prefs.getString('deviceId') ?? '';
     notifyListeners();
   }
 
-  Future<void> setDarkMode(bool value) async {
-    _isDarkMode = value;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isDarkMode', value);
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (_themeMode == mode) return;
+    _themeMode = mode;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('themeMode', mode.name);
   }
+
+  Future<void> setDarkMode(bool value) =>
+      setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
 
   Future<void> setFirstLaunch(bool value) async {
     _isFirstLaunch = value;

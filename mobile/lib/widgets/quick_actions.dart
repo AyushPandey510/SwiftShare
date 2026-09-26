@@ -214,14 +214,22 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              widget.color.withValues(alpha: 0.15),
-                              widget.color.withValues(alpha: 0.08),
-                            ],
-                          ),
+                          color: context.isDark
+                              ? Color.alphaBlend(
+                                  widget.color.withValues(alpha: 0.18),
+                                  context.palette.surface,
+                                )
+                              : null,
+                          gradient: context.isDark
+                              ? null
+                              : LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    widget.color.withValues(alpha: 0.15),
+                                    widget.color.withValues(alpha: 0.08),
+                                  ],
+                                ),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: widget.color.withValues(alpha: 0.2),
@@ -247,7 +255,7 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
                       Text(
                         widget.subtitle,
                         style: AppTextStyles.caption.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                          color: context.palette.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

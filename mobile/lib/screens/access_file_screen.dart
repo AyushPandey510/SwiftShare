@@ -40,7 +40,7 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: Consumer<ShareProvider>(
           builder: (context, shareProvider, child) {
@@ -53,7 +53,7 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
                 Text(
                   'Access a shared file',
                   style: AppTextStyles.heading2.copyWith(
-                    color: Colors.black,
+                    color: context.palette.textPrimary,
                     fontSize: 28,
                     height: 1.05,
                     fontWeight: FontWeight.w800,
@@ -63,7 +63,7 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
                 Text(
                   'Enter the six-character code from web, another phone, or a QR scan.',
                   style: AppTextStyles.body2.copyWith(
-                    color: const Color(0xFF60708C),
+                    color: context.palette.textSecondary,
                     height: 1.45,
                     fontWeight: FontWeight.w500,
                   ),
@@ -103,11 +103,15 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.secondary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            // Dark mode: solid brand colour instead of the gradient.
+            color: context.isDark ? AppColors.primary : null,
+            gradient: context.isDark
+                ? null
+                : const LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
@@ -135,11 +139,17 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
               width: 68,
               height: 68,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF8FAFF), Color(0xFFE9ECFF)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+                color: context.isDark ? context.palette.accentSoft : null,
+                gradient: context.isDark
+                    ? null
+                    : LinearGradient(
+                        colors: [
+                          context.palette.accentSoftTop,
+                          context.palette.accentSoft,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(Icons.file_download_outlined,
@@ -153,7 +163,7 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
             textAlign: TextAlign.center,
             textCapitalization: TextCapitalization.characters,
             style: AppTextStyles.heading3.copyWith(
-              color: Colors.black,
+              color: context.palette.textPrimary,
               letterSpacing: 2,
               fontWeight: FontWeight.w800,
             ),
@@ -162,14 +172,14 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
               hintText: 'ABC123',
               prefixIcon: const Icon(Icons.tag, color: AppColors.primary),
               filled: true,
-              fillColor: const Color(0xFFF8FAFD),
+              fillColor: context.palette.surfaceSubtle,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: Color(0xFFE5EBF4)),
+                borderSide: BorderSide(color: context.palette.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: Color(0xFFE5EBF4)),
+                borderSide: BorderSide(color: context.palette.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -277,7 +287,7 @@ class _SharedFileAccessCard extends StatelessWidget {
                 child: Text(
                   file.filename,
                   style: AppTextStyles.body1.copyWith(
-                    color: Colors.black,
+                    color: context.palette.textPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -359,7 +369,7 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyles.caption.copyWith(
-                color: const Color(0xFF8FA0B8),
+                color: context.palette.textMuted,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -368,7 +378,7 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               value,
               style: AppTextStyles.body2.copyWith(
-                color: const Color(0xFF24324B),
+                color: context.palette.textBody,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -406,18 +416,18 @@ class _CircleButtonState extends State<_CircleButton> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.palette.surface,
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE5EBF4)),
+            border: Border.all(color: context.palette.border),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF53617A).withValues(alpha: 0.08),
+                color: context.palette.shadow,
                 blurRadius: 14,
                 offset: const Offset(0, 6),
               ),
             ],
           ),
-          child: Icon(widget.icon, color: const Color(0xFF334155), size: 20),
+          child: Icon(widget.icon, color: context.palette.textBody, size: 20),
         ),
       ),
     );
@@ -463,12 +473,12 @@ class _Panel extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5EBF4)),
+        border: Border.all(color: context.palette.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF53617A).withValues(alpha: 0.08),
+            color: context.palette.shadow,
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),

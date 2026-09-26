@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import '../utils/theme.dart';
+
 class AnimatedGradientBackground extends StatefulWidget {
   final Widget child;
   const AnimatedGradientBackground({super.key, required this.child});
@@ -48,6 +50,10 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
 
   @override
   Widget build(BuildContext context) {
+    // Dark mode: plain solid background, no animated gradient.
+    if (context.isDark) {
+      return ColoredBox(color: context.palette.background, child: widget.child);
+    }
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {

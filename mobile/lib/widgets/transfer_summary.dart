@@ -113,13 +113,19 @@ class TransferSummaryWidget extends StatelessWidget {
                   Container(
                     height: 1,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                          Colors.transparent,
-                        ],
-                      ),
+                      color: context.isDark ? context.palette.border : null,
+                      gradient: context.isDark
+                          ? null
+                          : LinearGradient(
+                              colors: [
+                                Colors.transparent,
+                                Theme.of(context)
+                                    .colorScheme
+                                    .outline
+                                    .withValues(alpha: 0.2),
+                                Colors.transparent,
+                              ],
+                            ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -198,7 +204,7 @@ class _SummaryItem extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.caption.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              color: context.palette.textSecondary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -273,13 +279,13 @@ class _ActiveTransferItem extends StatelessWidget {
               Icon(
                 Icons.access_time,
                 size: 14,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: context.palette.textSecondary,
               ),
               const SizedBox(width: 4),
               Text(
                 transferProvider.formatTransferTime(transfer.startTime),
                 style: AppTextStyles.caption.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: context.palette.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -287,7 +293,7 @@ class _ActiveTransferItem extends StatelessWidget {
               Text(
                 transferProvider.formatFileSize(transfer.fileSize),
                 style: AppTextStyles.caption.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: context.palette.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),

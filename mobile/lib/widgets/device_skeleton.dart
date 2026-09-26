@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../utils/theme.dart';
+
 class DeviceSkeleton extends StatelessWidget {
   const DeviceSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Theme.of(context).colorScheme.surface,
-      highlightColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
+      baseColor: context.palette.surfaceMuted,
+      highlightColor: context.palette.surface,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(20),

@@ -19,7 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
@@ -27,7 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               'Settings',
               style: AppTextStyles.heading2.copyWith(
-                color: Colors.black,
+                color: context.palette.textPrimary,
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
               ),
@@ -36,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               'Manage preferences for sharing and your device.',
               style: AppTextStyles.body2.copyWith(
-                color: const Color(0xFF60708C),
+                color: context.palette.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -63,11 +63,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, deviceProvider, child) {
         return Card(
           elevation: 0,
-          color: Colors.white,
-          surfaceTintColor: Colors.white,
+          color: context.palette.surface,
+          surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
-            side: const BorderSide(color: Color(0xFFE5EBF4)),
+            side: BorderSide(color: context.palette.border),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -124,11 +124,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildNetworkSection(BuildContext context) {
     return Card(
       elevation: 0,
-      color: Colors.white,
-      surfaceTintColor: Colors.white,
+      color: context.palette.surface,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: Color(0xFFE5EBF4)),
+        side: BorderSide(color: context.palette.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -208,11 +208,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, transferProvider, child) {
         return Card(
           elevation: 0,
-          color: Colors.white,
-          surfaceTintColor: Colors.white,
+          color: context.palette.surface,
+          surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
-            side: const BorderSide(color: Color(0xFFE5EBF4)),
+            side: BorderSide(color: context.palette.border),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -273,11 +273,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, appProvider, child) {
         return Card(
           elevation: 0,
-          color: Colors.white,
-          surfaceTintColor: Colors.white,
+          color: context.palette.surface,
+          surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
-            side: const BorderSide(color: Color(0xFFE5EBF4)),
+            side: BorderSide(color: context.palette.border),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -293,13 +293,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 16),
                 _SettingsItem(
                   icon: Icons.dark_mode,
-                  title: 'Dark Mode',
-                  subtitle: 'Use dark theme',
-                  trailing: Switch(
-                    value: appProvider.isDarkMode,
-                    onChanged: (value) {
-                      appProvider.setDarkMode(value);
-                    },
+                  title: 'Theme',
+                  subtitle: 'Follow your phone, or pick light or dark',
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<ThemeMode>(
+                      showSelectedIcon: false,
+                      segments: const [
+                        ButtonSegment(
+                          value: ThemeMode.system,
+                          icon: Icon(Icons.brightness_auto, size: 18),
+                          label: Text('System'),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.light,
+                          icon: Icon(Icons.light_mode, size: 18),
+                          label: Text('Light'),
+                        ),
+                        ButtonSegment(
+                          value: ThemeMode.dark,
+                          icon: Icon(Icons.dark_mode, size: 18),
+                          label: Text('Dark'),
+                        ),
+                      ],
+                      selected: {appProvider.themeMode},
+                      onSelectionChanged: (selection) =>
+                          appProvider.setThemeMode(selection.first),
+                    ),
                   ),
                 ),
                 _SettingsItem(
@@ -335,11 +358,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildAboutSection(BuildContext context) {
     return Card(
       elevation: 0,
-      color: Colors.white,
-      surfaceTintColor: Colors.white,
+      color: context.palette.surface,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: Color(0xFFE5EBF4)),
+        side: BorderSide(color: context.palette.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -440,7 +463,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(
               'QR Code\nPlaceholder',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+              // Dark text: this box stays white in both themes (QR area).
+              style: TextStyle(fontSize: 16, color: Color(0xFF0F172A)),
             ),
           ),
         ),
@@ -850,12 +874,12 @@ class _SettingsItem extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.09),
+          color: context.palette.accentSoft,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
           icon,
-          color: AppColors.primary,
+          color: context.palette.accent,
           size: 20,
         ),
       ),
@@ -869,7 +893,7 @@ class _SettingsItem extends StatelessWidget {
       subtitle: Text(
         subtitle,
         style: AppTextStyles.caption.copyWith(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          color: context.palette.textSecondary,
         ),
       ),
       trailing: trailing,

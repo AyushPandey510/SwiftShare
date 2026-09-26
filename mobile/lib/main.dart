@@ -42,13 +42,33 @@ class SwiftShareApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TransferProvider()),
         ChangeNotifierProvider(create: (_) => DeviceProvider()),
       ],
-      child: MaterialApp(
-        title: 'SwiftShare',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        home: const SplashScreen(),
-        debugShowCheckedModeBanner: false,
+      child: Consumer<AppProvider>(
+        builder: (context, appProvider, _) => MaterialApp(
+          title: 'SwiftShare',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          // Was hard-coded to ThemeMode.system, so the Settings switch did
+          // nothing. Now driven by the user's choice (System / Light / Dark).
+          themeMode: appProvider.themeMode,
+          home: const SplashScreen(),
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            final bool dark = Theme.of(context).brightness == Brightness.dark;
+            // Status bar and Android nav bar icons follow the theme too.
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: (dark
+                      ? SystemUiOverlayStyle.light
+                      : SystemUiOverlayStyle.dark)
+                  .copyWith(
+                statusBarColor: Colors.transparent,
+                systemNavigationBarColor: context.palette.navBar,
+                systemNavigationBarIconBrightness:
+                    dark ? Brightness.light : Brightness.dark,
+              ),
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
+        ),
       ),
     );
   }
@@ -252,13 +272,13 @@ class _SwiftShareBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        border: const Border(
-          top: BorderSide(color: Color(0xFFE5EBF4)),
+        color: context.palette.navBar,
+        border: Border(
+          top: BorderSide(color: context.palette.border),
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF53617A).withValues(alpha: 0.10),
+            color: context.palette.shadow,
             blurRadius: 18,
             offset: const Offset(0, -6),
           ),
@@ -268,7 +288,7 @@ class _SwiftShareBottomBar extends StatelessWidget {
         top: false,
         child: Container(
           padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-          color: const Color(0xFFF8FAFC),
+          color: context.palette.navBar,
           child: Row(
             children: List.generate(_items.length, (index) {
               final item = _items[index];
@@ -307,7 +327,7 @@ class _BottomBarItemState extends State<_BottomBarItem> {
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.selected ? AppColors.primary : const Color(0xFF9AA7BC);
+    final color = widget.selected ? AppColors.primary : context.palette.textMuted;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -324,7 +344,7 @@ class _BottomBarItemState extends State<_BottomBarItem> {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(vertical: 7),
           decoration: BoxDecoration(
-            color: widget.selected ? Colors.white : Colors.transparent,
+            color: widget.selected ? context.palette.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             boxShadow: widget.selected
                 ? [

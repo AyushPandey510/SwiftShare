@@ -159,20 +159,20 @@ class HomeScreen extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+              color: context.palette.textMuted,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
               Icons.devices_other,
               size: 40,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              color: context.palette.textMuted,
             ),
           ),
           const SizedBox(height: 20),
           Text(
             'No devices found',
             style: AppTextStyles.heading3.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+              color: context.palette.textBody,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -180,7 +180,7 @@ class HomeScreen extends StatelessWidget {
           Text(
             'Make sure other devices are running SwiftShare and on the same network',
             style: AppTextStyles.body2.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              color: context.palette.textSecondary,
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,

@@ -258,14 +258,18 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                           offset: Offset(0, _scanAnimation.value * 280),
                           child: Container(
                             height: 2,
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.transparent,
-                                  AppColors.primary,
-                                  Colors.transparent,
-                                ],
-                              ),
+                            decoration: BoxDecoration(
+                              color:
+                                  context.isDark ? AppColors.primary : null,
+                              gradient: context.isDark
+                                  ? null
+                                  : const LinearGradient(
+                                      colors: [
+                                        Colors.transparent,
+                                        AppColors.primary,
+                                        Colors.transparent,
+                                      ],
+                                    ),
                             ),
                           ),
                         );

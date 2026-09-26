@@ -30,7 +30,7 @@ class _TransfersScreenState extends State<TransfersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,7 +43,7 @@ class _TransfersScreenState extends State<TransfersScreen>
                   Text(
                     'Transfers',
                     style: AppTextStyles.heading2.copyWith(
-                      color: Colors.black,
+                      color: context.palette.textPrimary,
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
                     ),
@@ -52,7 +52,7 @@ class _TransfersScreenState extends State<TransfersScreen>
                   Text(
                     'Track nearby sends and completed downloads.',
                     style: AppTextStyles.body2.copyWith(
-                      color: const Color(0xFF60708C),
+                      color: context.palette.textSecondary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -61,16 +61,16 @@ class _TransfersScreenState extends State<TransfersScreen>
                     height: 44,
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEFF3FA),
+                      color: context.palette.surfaceMuted,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFE4EAF3)),
+                      border: Border.all(color: context.palette.border),
                     ),
                     child: TabBar(
                       controller: _tabController,
                       dividerColor: Colors.transparent,
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicator: BoxDecoration(
-                        color: Colors.white,
+                        color: context.palette.surface,
                         borderRadius: BorderRadius.circular(11),
                         boxShadow: [
                           BoxShadow(
@@ -81,7 +81,7 @@ class _TransfersScreenState extends State<TransfersScreen>
                         ],
                       ),
                       labelColor: AppColors.primary,
-                      unselectedLabelColor: const Color(0xFF64748B),
+                      unselectedLabelColor: context.palette.textSecondary,
                       labelStyle: AppTextStyles.caption.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -179,29 +179,20 @@ class _TransfersScreenState extends State<TransfersScreen>
             Icon(
               icon,
               size: 64,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.5),
+              color: context.palette.textMuted,
             ),
             const SizedBox(height: 16),
             Text(
               title,
               style: AppTextStyles.heading3.copyWith(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.7),
+                color: context.palette.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               style: AppTextStyles.body2.copyWith(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.5),
+                color: context.palette.textMuted,
               ),
               textAlign: TextAlign.center,
             ),
@@ -226,12 +217,12 @@ class _TransferCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE5EBF4)),
+        border: Border.all(color: context.palette.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF53617A).withValues(alpha: 0.08),
+            color: context.palette.shadow,
             blurRadius: 22,
             offset: const Offset(0, 10),
           ),
@@ -262,10 +253,7 @@ class _TransferCard extends StatelessWidget {
                       Text(
                         'To: ${transfer.targetDevice}',
                         style: AppTextStyles.caption.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.6),
+                          color: context.palette.textSecondary,
                         ),
                       ),
                     ],
@@ -280,29 +268,20 @@ class _TransferCard extends StatelessWidget {
                 Icon(
                   Icons.access_time,
                   size: 14,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.5),
+                  color: context.palette.textMuted,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   _formatDateTime(transfer.startTime),
                   style: AppTextStyles.caption.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.5),
+                    color: context.palette.textMuted,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   transferProvider.formatFileSize(transfer.fileSize),
                   style: AppTextStyles.caption.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.7),
+                    color: context.palette.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -333,10 +312,7 @@ class _TransferCard extends StatelessWidget {
                   Text(
                     transferProvider.formatSpeed(transfer.speed),
                     style: AppTextStyles.caption.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
+                      color: context.palette.textSecondary,
                     ),
                   ),
                 ],
