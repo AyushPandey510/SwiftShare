@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:swiftshare_mobile/screens/access_file_screen.dart';
+import 'package:swiftshare_mobile/services/share_api_service.dart';
 import 'package:swiftshare_mobile/utils/theme.dart';
 
 class QRScannerScreen extends StatefulWidget {
@@ -10,7 +12,8 @@ class QRScannerScreen extends StatefulWidget {
   State<QRScannerScreen> createState() => _QRScannerScreenState();
 }
 
-class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderStateMixin {
+class _QRScannerScreenState extends State<QRScannerScreen>
+    with TickerProviderStateMixin {
   MobileScannerController controller = MobileScannerController();
   bool _isScanning = true;
   bool _hasPermission = false;
@@ -68,16 +71,18 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
               _isScanning ? Icons.pause : Icons.play_arrow,
               color: Colors.white,
             ),
-            onPressed: _hasPermission ? () {
-              setState(() {
-                _isScanning = !_isScanning;
-                if (_isScanning) {
-                  controller.start();
-                } else {
-                  controller.stop();
-                }
-              });
-            } : null,
+            onPressed: _hasPermission
+                ? () {
+                    setState(() {
+                      _isScanning = !_isScanning;
+                      if (_isScanning) {
+                        controller.start();
+                      } else {
+                        controller.stop();
+                      }
+                    });
+                  }
+                : null,
           ),
         ],
       ),
@@ -102,7 +107,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.2),
+                color: AppColors.error.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: const Icon(
@@ -137,7 +142,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -163,7 +169,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
               }
             }
           },
-          errorBuilder: (context, error, child) {
+          errorBuilder: (context, error) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +178,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.2),
+                      color: AppColors.error.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(40),
                     ),
                     child: const Icon(
@@ -216,7 +222,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
   Widget _buildScanOverlay() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withValues(alpha: 0.6),
       ),
       child: Center(
         child: Column(
@@ -248,10 +254,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                     child: AnimatedBuilder(
                       animation: _scanAnimation,
                       builder: (context, child) {
-                        return Positioned(
-                          top: _scanAnimation.value * 280,
-                          left: 0,
-                          right: 0,
+                        return Transform.translate(
+                          offset: Offset(0, _scanAnimation.value * 280),
                           child: Container(
                             height: 2,
                             decoration: const BoxDecoration(
@@ -305,7 +309,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                       height: 40,
                       decoration: const BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: AppColors.primary, width: 4),
+                          bottom:
+                              BorderSide(color: AppColors.primary, width: 4),
                           left: BorderSide(color: AppColors.primary, width: 4),
                         ),
                       ),
@@ -319,7 +324,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
                       height: 40,
                       decoration: const BoxDecoration(
                         border: Border(
-                          bottom: BorderSide(color: AppColors.primary, width: 4),
+                          bottom:
+                              BorderSide(color: AppColors.primary, width: 4),
                           right: BorderSide(color: AppColors.primary, width: 4),
                         ),
                       ),
@@ -332,7 +338,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(
@@ -364,7 +370,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
   void _processQRData(String qrData) {
     try {
       final data = qrData.trim();
-      
+      final fileCode = ShareApiService.extractCode(data);
+      if (fileCode != null) {
+        _openSharedFile(fileCode);
+        return;
+      }
+
       if (data.startsWith('swiftshare://')) {
         _handleSwiftShareConnection(data);
       } else if (data.startsWith('http://') || data.startsWith('https://')) {
@@ -382,7 +393,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
       final uri = Uri.parse(url);
       final deviceId = uri.host;
       final port = uri.port;
-      
+
       _showQRResult('SwiftShare Device', 'Device ID: $deviceId\nPort: $port');
     } catch (e) {
       _showQRResult('Error', 'Invalid SwiftShare URL: $e');
@@ -391,6 +402,15 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
 
   void _handleHttpConnection(String url) {
     _showQRResult('HTTP URL', url);
+  }
+
+  void _openSharedFile(String code) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AccessFileScreen(initialCode: code),
+      ),
+    );
   }
 
   void _showQRResult(String title, String content) {
@@ -418,7 +438,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -477,4 +497,4 @@ class _QRScannerScreenState extends State<QRScannerScreen> with TickerProviderSt
     controller.dispose();
     super.dispose();
   }
-} 
+}

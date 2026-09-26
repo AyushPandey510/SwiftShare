@@ -112,7 +112,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: IconButton(
@@ -146,10 +146,10 @@ class HomeScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -159,20 +159,20 @@ class HomeScreen extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
               Icons.devices_other,
               size: 40,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 20),
           Text(
             'No devices found',
             style: AppTextStyles.heading3.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -180,7 +180,7 @@ class HomeScreen extends StatelessWidget {
           Text(
             'Make sure other devices are running SwiftShare and on the same network',
             style: AppTextStyles.body2.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
@@ -212,10 +212,10 @@ class HomeScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.success.withOpacity(0.1),
+            color: AppColors.success.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: AppColors.success.withOpacity(0.2),
+              color: AppColors.success.withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -260,16 +260,18 @@ class HomeScreen extends StatelessWidget {
               subtitle: Text('Send file to ${device.name}'),
               onTap: () {
                 Navigator.pop(context);
-                context.read<TransferProvider>().pickAndSendFile(device.name);
+                context.read<TransferProvider>().pickAndSendFile(
+                  device.id,
+                  targetDeviceName: device.name,
+                );
               },
             ),
             ListTile(
               leading: const Icon(Icons.folder),
               title: const Text('Send Folder'),
-              subtitle: Text('Send folder to ${device.name}'),
+              subtitle: const Text('Folder sharing is not supported yet'),
+              enabled: false,
               onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement folder sending
               },
             ),
             ListTile(

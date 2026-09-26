@@ -33,11 +33,13 @@ class DeviceProvider extends ChangeNotifier {
   List<Device> _devices = [];
   bool _isScanning = false;
   String _localIpAddress = '';
+  String? _discoveryError;
   final FileTransferService _fileTransferService = FileTransferService();
 
   List<Device> get devices => _devices;
   bool get isScanning => _isScanning;
   String get localIpAddress => _localIpAddress;
+  String? get discoveryError => _discoveryError;
 
   List<Device> get onlineDevices => 
       _devices.where((d) => d.isOnline).toList();
@@ -82,48 +84,13 @@ class DeviceProvider extends ChangeNotifier {
       
       // Get real devices from backend
       final devicesData = await _fileTransferService.getAvailableDevices();
-      
-      _devices = devicesData.map((deviceData) {
-        return Device(
-          id: deviceData['id'] ?? '',
-          name: deviceData['name'] ?? 'Unknown Device',
-          address: deviceData['address'] ?? '',
-          type: _parseDeviceType(deviceData['type'] ?? ''),
-          capabilities: List<String>.from(deviceData['capabilities'] ?? []),
-          lastSeen: DateTime.now(),
-          isOnline: deviceData['isOnline'] ?? true,
-        );
-      }).toList();
+      _devices = devicesData.map(_deviceFromJson).toList();
+      _discoveryError = null;
       
     } catch (e) {
       debugPrint('Error discovering devices: $e');
-      // Fallback to mock devices if backend is not available
-      _devices = [
-        Device(
-          id: '1',
-          name: 'iPhone 13',
-          address: '192.168.1.100',
-          type: DeviceType.mobile,
-          capabilities: ['FileTransfer', 'Encryption'],
-          lastSeen: DateTime.now(),
-        ),
-        Device(
-          id: '2',
-          name: 'MacBook Pro',
-          address: '192.168.1.101',
-          type: DeviceType.desktop,
-          capabilities: ['FileTransfer', 'Encryption', 'Compression'],
-          lastSeen: DateTime.now(),
-        ),
-        Device(
-          id: '3',
-          name: 'Windows PC',
-          address: '192.168.1.102',
-          type: DeviceType.desktop,
-          capabilities: ['FileTransfer'],
-          lastSeen: DateTime.now(),
-        ),
-      ];
+      _devices = [];
+      _discoveryError = 'Could not load nearby devices. Check that the backend is running and reachable.';
     }
 
     _isScanning = false;
@@ -137,31 +104,12 @@ class DeviceProvider extends ChangeNotifier {
     try {
       // Get real devices from backend
       final devicesData = await _fileTransferService.getAvailableDevices();
-      
-      _devices = devicesData.map((deviceData) {
-        return Device(
-          id: deviceData['id'] ?? '',
-          name: deviceData['name'] ?? 'Unknown Device',
-          address: deviceData['address'] ?? '',
-          type: _parseDeviceType(deviceData['type'] ?? ''),
-          capabilities: List<String>.from(deviceData['capabilities'] ?? []),
-          lastSeen: DateTime.now(),
-          isOnline: deviceData['isOnline'] ?? true,
-        );
-      }).toList();
+      _devices = devicesData.map(_deviceFromJson).toList();
+      _discoveryError = null;
       
     } catch (e) {
       debugPrint('Error refreshing devices: $e');
-      // Update last seen times for existing devices
-      _devices = _devices.map((device) => Device(
-        id: device.id,
-        name: device.name,
-        address: device.address,
-        type: device.type,
-        capabilities: device.capabilities,
-        lastSeen: DateTime.now(),
-        isOnline: device.isOnline,
-      )).toList();
+      _discoveryError = 'Could not refresh nearby devices. Check your backend connection.';
     }
 
     _isScanning = false;
@@ -260,5 +208,29 @@ class DeviceProvider extends ChangeNotifier {
       default:
         return DeviceType.mobile;
     }
+  }
+
+  Device _deviceFromJson(Map<String, dynamic> deviceData) {
+    final ip = deviceData['ip']?.toString();
+    final apiPort = deviceData['api_port'] ?? deviceData['apiPort'] ?? deviceData['port'];
+    final fallbackAddress = deviceData['address']?.toString() ?? '';
+    final address = ip == null || ip.isEmpty
+        ? fallbackAddress
+        : apiPort == null
+            ? ip
+            : '$ip:$apiPort';
+
+    return Device(
+      id: deviceData['id']?.toString() ?? '',
+      name: deviceData['name']?.toString() ?? 'Unknown Device',
+      address: address,
+      type: _parseDeviceType(
+        (deviceData['device_type'] ?? deviceData['deviceType'] ?? deviceData['type'] ?? '')
+            .toString(),
+      ),
+      capabilities: List<String>.from(deviceData['capabilities'] is List ? deviceData['capabilities'] : const []),
+      lastSeen: DateTime.tryParse(deviceData['last_seen']?.toString() ?? '') ?? DateTime.now(),
+      isOnline: (deviceData['is_online'] ?? deviceData['isOnline']) != false,
+    );
   }
 } 

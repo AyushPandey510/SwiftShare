@@ -76,8 +76,8 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
                         ),
                         radius: 0.8,
                         colors: [
-                          Colors.white.withOpacity(0.12),
-                          Colors.black.withOpacity(0.08),
+                          Colors.white.withValues(alpha: 0.12),
+                          Colors.black.withValues(alpha: 0.08),
                         ],
                         stops: const [0.0, 1.0],
                       ),

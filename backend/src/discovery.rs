@@ -272,7 +272,7 @@ impl DeviceDiscovery {
     }
 
     async fn get_device_info(ip: Ipv4Addr, port: u16) -> Result<Device> {
-        let url = format!("http://{}:{}/api/status", ip, port);
+        let url = format!("http://{}:{}/status", ip, port);
 
         let client = reqwest::Client::new();
         let response = client
@@ -290,13 +290,26 @@ impl DeviceDiscovery {
                     .as_str()
                     .unwrap_or(&format!("Device-{}", ip))
                     .to_string(),
-                device_type: DeviceType::Unknown, // Would be determined from response
+                device_type: match status["device_type"].as_str().unwrap_or("unknown") {
+                    "desktop" => DeviceType::Desktop,
+                    "mobile" => DeviceType::Mobile,
+                    "web" => DeviceType::Web,
+                    _ => DeviceType::Unknown,
+                },
                 ip: IpAddr::V4(ip),
                 port,
                 api_port: port,
                 last_seen: Utc::now(),
                 is_online: true,
-                capabilities: vec!["file-transfer".to_string()],
+                capabilities: status["capabilities"]
+                    .as_array()
+                    .map(|capabilities| {
+                        capabilities
+                            .iter()
+                            .filter_map(|capability| capability.as_str().map(ToString::to_string))
+                            .collect()
+                    })
+                    .unwrap_or_else(|| vec!["file-transfer".to_string()]),
                 transfer_speed: None,
                 version: status["version"].as_str().map(|s| s.to_string()),
             });

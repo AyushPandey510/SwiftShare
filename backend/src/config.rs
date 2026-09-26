@@ -62,8 +62,9 @@ impl Config {
         let mut download_dir = dirs::download_dir().unwrap_or_else(|| PathBuf::from("downloads"));
         download_dir.push("SwiftShare");
 
-        // Use in-memory database for now to avoid file system issues
-        let database_path = PathBuf::from(":memory:");
+        let mut database_path = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("data"));
+        database_path.push("swiftshare");
+        database_path.push("swiftshare.db");
 
         Self {
             bind_address: "0.0.0.0".to_string(),

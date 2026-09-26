@@ -24,7 +24,7 @@ mod qr;
 mod transfer;
 
 use config::Config;
-use database::TransferDatabase;
+use database::{TransferDatabase, UploadedFileRecord};
 use discovery::DeviceDiscovery;
 use qr::QRCodeManager;
 use transfer::TransferEngine;
@@ -100,6 +100,11 @@ async fn main() -> Result<()> {
         }
     });
 
+    let cleanup_state = app_state.clone();
+    tokio::spawn(async move {
+        cleanup_expired_uploaded_files(cleanup_state).await;
+    });
+
     start_api_server(app_state).await?;
 
     Ok(())
@@ -116,16 +121,29 @@ async fn start_api_server(state: AppState) -> Result<()> {
         }))
     });
 
-    let status = warp::path("status").and(warp::get()).map(|| {
-        warp::reply::json(&json!({
-            "status": "running",
-            "version": env!("CARGO_PKG_VERSION"),
-            "uptime": std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_secs()
-        }))
-    });
+    let status = {
+        let status_state = state.clone();
+        warp::path("status")
+            .and(warp::get())
+            .and(with_state(status_state))
+            .map(|state: Arc<AppState>| {
+                warp::reply::json(&json!({
+                    "status": "running",
+                    "version": env!("CARGO_PKG_VERSION"),
+                    "device_name": hostname::get()
+                        .map(|name| name.to_string_lossy().to_string())
+                        .unwrap_or_else(|_| "SwiftShare Backend".to_string()),
+                    "device_type": "desktop",
+                    "api_port": state.config.api_port,
+                    "transfer_port": state.config.transfer_port,
+                    "capabilities": ["file-transfer", "share-by-code"],
+                    "uptime": std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap_or_default()
+                        .as_secs()
+                }))
+            })
+    };
 
     let devices = warp::path!("api" / "devices")
         .and(warp::get())
@@ -317,7 +335,15 @@ async fn upload_file_multipart(
                                 .download_dir
                                 .join(format!("{}_{}", &code, &filename));
                             let code_in_use = state.uploaded_files.read().await.contains_key(&code);
-                            if !code_in_use && tokio::fs::metadata(&candidate_path).await.is_err() {
+                            let db_code_in_use = state
+                                .database
+                                .uploaded_file_code_exists(&code)
+                                .await
+                                .unwrap_or(true);
+                            if !code_in_use
+                                && !db_code_in_use
+                                && tokio::fs::metadata(&candidate_path).await.is_err()
+                            {
                                 break code;
                             }
                         };
@@ -426,6 +452,19 @@ async fn upload_file_multipart(
                             download_count: 0,
                             max_downloads,
                         };
+
+                        if let Err(e) = state
+                            .database
+                            .save_uploaded_file(&uploaded_file_to_record(&uploaded_file))
+                            .await
+                        {
+                            error!("Failed to persist uploaded file metadata: {}", e);
+                            let _ = tokio::fs::remove_file(&uploaded_file.path).await;
+                            return Ok(warp::reply::json(&json!({
+                                "success": false,
+                                "error": "Failed to save file metadata"
+                            })));
+                        }
 
                         state
                             .uploaded_files
@@ -611,12 +650,75 @@ fn uploaded_file_expired(uploaded_file: &UploadedFile) -> bool {
         .unwrap_or(true)
 }
 
+fn uploaded_file_to_record(uploaded_file: &UploadedFile) -> UploadedFileRecord {
+    UploadedFileRecord {
+        id: uploaded_file.id.clone(),
+        code: uploaded_file.code.clone(),
+        filename: uploaded_file.filename.clone(),
+        size: uploaded_file.size as u64,
+        content_type: uploaded_file.content_type.clone(),
+        path: uploaded_file.path.clone(),
+        uploaded_at: DateTime::parse_from_rfc3339(&uploaded_file.uploaded_at)
+            .map(|date| date.with_timezone(&Utc))
+            .unwrap_or_else(|_| Utc::now()),
+        expires_at: DateTime::parse_from_rfc3339(&uploaded_file.expires_at)
+            .map(|date| date.with_timezone(&Utc))
+            .unwrap_or_else(|_| Utc::now()),
+        download_count: uploaded_file.download_count,
+        max_downloads: uploaded_file.max_downloads,
+    }
+}
+
+fn uploaded_file_from_record(record: UploadedFileRecord) -> UploadedFile {
+    UploadedFile {
+        id: record.id,
+        code: record.code,
+        filename: record.filename,
+        size: record.size as usize,
+        content_type: record.content_type,
+        path: record.path,
+        uploaded_at: record.uploaded_at.to_rfc3339(),
+        expires_at: record.expires_at.to_rfc3339(),
+        download_count: record.download_count,
+        max_downloads: record.max_downloads,
+    }
+}
+
+async fn cleanup_expired_uploaded_files(state: AppState) {
+    let interval_seconds = state.config.cleanup_interval.max(30);
+
+    loop {
+        tokio::time::sleep(std::time::Duration::from_secs(interval_seconds)).await;
+
+        match state.database.get_expired_uploaded_files().await {
+            Ok(expired_files) => {
+                for record in expired_files {
+                    remove_uploaded_file(&state, &uploaded_file_from_record(record)).await;
+                }
+            }
+            Err(e) => {
+                error!("Failed to load expired uploaded files for cleanup: {}", e);
+            }
+        }
+    }
+}
+
 async fn remove_uploaded_file(state: &AppState, uploaded_file: &UploadedFile) {
     state
         .uploaded_files
         .write()
         .await
         .remove(&uploaded_file.code);
+    if let Err(e) = state
+        .database
+        .delete_uploaded_file(&uploaded_file.code)
+        .await
+    {
+        error!(
+            "Failed to remove uploaded file metadata for {}: {}",
+            uploaded_file.code, e
+        );
+    }
     let _ = tokio::fs::remove_file(&uploaded_file.path).await;
 }
 
@@ -629,6 +731,22 @@ async fn locate_uploaded_file_by_code(state: &AppState, code: &str) -> Option<Up
         let uploaded_files = state.uploaded_files.read().await;
         if let Some(uploaded_file) = uploaded_files.get(code).cloned() {
             return Some(uploaded_file);
+        }
+    }
+
+    match state.database.get_uploaded_file_by_code(code).await {
+        Ok(Some(record)) => {
+            let uploaded_file = uploaded_file_from_record(record);
+            state
+                .uploaded_files
+                .write()
+                .await
+                .insert(code.to_string(), uploaded_file.clone());
+            return Some(uploaded_file);
+        }
+        Ok(None) => {}
+        Err(e) => {
+            error!("Failed to load uploaded file metadata for {}: {}", code, e);
         }
     }
 
@@ -975,6 +1093,16 @@ async fn download_file(
                 if let Some(stored_file) = uploaded_files.get_mut(&uploaded_file.code) {
                     stored_file.download_count += 1;
                 }
+            }
+            if let Err(e) = state
+                .database
+                .increment_uploaded_file_download_count(&uploaded_file.code)
+                .await
+            {
+                error!(
+                    "Failed to persist download count for {}: {}",
+                    uploaded_file.code, e
+                );
             }
 
             let stream = FramedRead::new(file, BytesCodec::new()).map_ok(|bytes| bytes.freeze());

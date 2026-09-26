@@ -8,7 +8,7 @@ class DeviceSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: Theme.of(context).colorScheme.surface,
-      highlightColor: Theme.of(context).colorScheme.surface.withOpacity(0.6),
+      highlightColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.6),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(20),
@@ -16,7 +16,7 @@ class DeviceSkeleton extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
             width: 1,
           ),
         ),

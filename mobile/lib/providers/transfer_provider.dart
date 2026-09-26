@@ -8,6 +8,7 @@ class TransferItem {
   final String fileName;
   final int fileSize;
   final String filePath;
+  final String targetDeviceId;
   final String targetDevice;
   final TransferStatus status;
   final double progress;
@@ -20,6 +21,7 @@ class TransferItem {
     required this.fileName,
     required this.fileSize,
     required this.filePath,
+    required this.targetDeviceId,
     required this.targetDevice,
     required this.status,
     this.progress = 0.0,
@@ -45,25 +47,23 @@ class TransferProvider extends ChangeNotifier {
   List<TransferItem> get transfers => _transfers;
   bool get isTransferring => _isTransferring;
 
-  List<TransferItem> get activeTransfers => 
+  List<TransferItem> get activeTransfers =>
       _transfers.where((t) => t.status == TransferStatus.inProgress).toList();
 
-  List<TransferItem> get completedTransfers => 
+  List<TransferItem> get completedTransfers =>
       _transfers.where((t) => t.status == TransferStatus.completed).toList();
 
-  List<TransferItem> get failedTransfers => 
+  List<TransferItem> get failedTransfers =>
       _transfers.where((t) => t.status == TransferStatus.failed).toList();
 
-  Future<void> pickAndSendFile(String targetDevice) async {
+  Future<void> pickAndSendFile(String targetDeviceId,
+      {String? targetDeviceName}) async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        allowMultiple: false,
-        type: FileType.any,
-      );
+      final result = await FilePicker.pickFile(type: FileType.any);
 
-      if (result != null) {
-        final file = File(result.files.single.path!);
-        final fileName = result.files.single.name;
+      if (result?.path != null) {
+        final file = File(result!.path!);
+        final fileName = result.name;
         final fileSize = await file.length();
 
         final transfer = TransferItem(
@@ -71,7 +71,8 @@ class TransferProvider extends ChangeNotifier {
           fileName: fileName,
           fileSize: fileSize,
           filePath: file.path,
-          targetDevice: targetDevice,
+          targetDeviceId: targetDeviceId,
+          targetDevice: targetDeviceName ?? targetDeviceId,
           status: TransferStatus.pending,
           startTime: DateTime.now(),
         );
@@ -98,6 +99,7 @@ class TransferProvider extends ChangeNotifier {
       fileSize: transfer.fileSize,
       filePath: transfer.filePath,
       targetDevice: transfer.targetDevice,
+      targetDeviceId: transfer.targetDeviceId,
       status: TransferStatus.inProgress,
       progress: 0.0,
       speed: 0.0,
@@ -108,11 +110,11 @@ class TransferProvider extends ChangeNotifier {
     try {
       // Initialize file transfer service
       await _fileTransferService.initialize();
-      
+
       // Start real file transfer
       final transferId = await _fileTransferService.sendFile(
         file,
-        transfer.targetDevice,
+        transfer.targetDeviceId,
         onProgress: (progress) {
           if (index < _transfers.length) {
             _transfers[index] = TransferItem(
@@ -121,9 +123,10 @@ class TransferProvider extends ChangeNotifier {
               fileSize: transfer.fileSize,
               filePath: transfer.filePath,
               targetDevice: transfer.targetDevice,
+              targetDeviceId: transfer.targetDeviceId,
               status: TransferStatus.inProgress,
               progress: progress,
-              speed: 1024 * 1024 * 10.0, // Calculate real speed
+              speed: 0.0,
               startTime: transfer.startTime,
             );
             notifyListeners();
@@ -142,28 +145,47 @@ class TransferProvider extends ChangeNotifier {
               default:
                 transferStatus = TransferStatus.inProgress;
             }
-            
+
             _transfers[index] = TransferItem(
               id: transfer.id,
               fileName: transfer.fileName,
               fileSize: transfer.fileSize,
               filePath: transfer.filePath,
               targetDevice: transfer.targetDevice,
+              targetDeviceId: transfer.targetDeviceId,
               status: transferStatus,
-              progress: transferStatus == TransferStatus.completed ? 1.0 : _transfers[index].progress,
+              progress: transferStatus == TransferStatus.completed
+                  ? 1.0
+                  : _transfers[index].progress,
               speed: _transfers[index].speed,
               startTime: transfer.startTime,
-              endTime: transferStatus == TransferStatus.completed || transferStatus == TransferStatus.failed 
-                  ? DateTime.now() 
+              endTime: transferStatus == TransferStatus.completed ||
+                      transferStatus == TransferStatus.failed
+                  ? DateTime.now()
                   : null,
             );
             notifyListeners();
           }
         },
       );
-      
+
       debugPrint('Transfer started with ID: $transferId');
-      
+      if (index < _transfers.length) {
+        _transfers[index] = TransferItem(
+          id: transfer.id,
+          fileName: transfer.fileName,
+          fileSize: transfer.fileSize,
+          filePath: transfer.filePath,
+          targetDeviceId: transfer.targetDeviceId,
+          targetDevice: transfer.targetDevice,
+          status: TransferStatus.completed,
+          progress: 1.0,
+          speed: 0.0,
+          startTime: transfer.startTime,
+          endTime: DateTime.now(),
+        );
+        notifyListeners();
+      }
     } catch (e) {
       debugPrint('Transfer failed: $e');
       // Mark as failed
@@ -173,6 +195,7 @@ class TransferProvider extends ChangeNotifier {
           fileName: transfer.fileName,
           fileSize: transfer.fileSize,
           filePath: transfer.filePath,
+          targetDeviceId: transfer.targetDeviceId,
           targetDevice: transfer.targetDevice,
           status: TransferStatus.failed,
           progress: 0.0,
@@ -196,6 +219,7 @@ class TransferProvider extends ChangeNotifier {
         fileName: _transfers[index].fileName,
         fileSize: _transfers[index].fileSize,
         filePath: _transfers[index].filePath,
+        targetDeviceId: _transfers[index].targetDeviceId,
         targetDevice: _transfers[index].targetDevice,
         status: TransferStatus.cancelled,
         progress: _transfers[index].progress,
@@ -220,20 +244,26 @@ class TransferProvider extends ChangeNotifier {
   String formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
   String formatSpeed(double bytesPerSecond) {
-    if (bytesPerSecond < 1024) return '${bytesPerSecond.toStringAsFixed(1)} B/s';
-    if (bytesPerSecond < 1024 * 1024) return '${(bytesPerSecond / 1024).toStringAsFixed(1)} KB/s';
+    if (bytesPerSecond < 1024) {
+      return '${bytesPerSecond.toStringAsFixed(1)} B/s';
+    }
+    if (bytesPerSecond < 1024 * 1024) {
+      return '${(bytesPerSecond / 1024).toStringAsFixed(1)} KB/s';
+    }
     return '${(bytesPerSecond / (1024 * 1024)).toStringAsFixed(1)} MB/s';
   }
 
   String formatTransferTime(DateTime startTime) {
     final now = DateTime.now();
     final difference = now.difference(startTime);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inMinutes < 60) {
@@ -244,4 +274,4 @@ class TransferProvider extends ChangeNotifier {
       return '${difference.inDays}d ago';
     }
   }
-} 
+}

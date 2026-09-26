@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:swiftshare_mobile/providers/transfer_provider.dart';
 import 'package:swiftshare_mobile/utils/theme.dart';
 import 'package:swiftshare_mobile/screens/qr_scanner_screen.dart';
 
@@ -25,7 +23,7 @@ class QuickActionsWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -91,7 +89,9 @@ class QuickActionsWidget extends StatelessWidget {
   }
 
   void _showFilePicker(BuildContext context) {
-    context.read<TransferProvider>().pickAndSendFile('Unknown Device');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Choose a nearby device first, then send a file.')),
+    );
   }
 
   void _showFolderPicker(BuildContext context) {
@@ -175,13 +175,13 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: _shadowAnimation.value,
                   offset: const Offset(0, 3),
                   spreadRadius: 0,
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                   spreadRadius: 0,
@@ -202,7 +202,7 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.08),
+                      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.08),
                       width: 1,
                     ),
                   ),
@@ -218,13 +218,13 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              widget.color.withOpacity(0.15),
-                              widget.color.withOpacity(0.08),
+                              widget.color.withValues(alpha: 0.15),
+                              widget.color.withValues(alpha: 0.08),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: widget.color.withOpacity(0.2),
+                            color: widget.color.withValues(alpha: 0.2),
                             width: 1,
                           ),
                         ),
@@ -247,7 +247,7 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
                       Text(
                         widget.subtitle,
                         style: AppTextStyles.caption.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           fontWeight: FontWeight.w500,
                         ),
                       ),

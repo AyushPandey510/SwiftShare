@@ -38,6 +38,20 @@ pub struct DeviceRecord {
     pub version: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UploadedFileRecord {
+    pub id: String,
+    pub code: String,
+    pub filename: String,
+    pub size: u64,
+    pub content_type: String,
+    pub path: PathBuf,
+    pub uploaded_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
+    pub download_count: u32,
+    pub max_downloads: u32,
+}
+
 pub struct TransferDatabase {
     pool: SqlitePool,
 }
@@ -101,6 +115,35 @@ impl TransferDatabase {
                 version TEXT
             )
             "#,
+        )
+        .execute(pool)
+        .await?;
+
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS uploaded_files (
+                id TEXT PRIMARY KEY,
+                code TEXT NOT NULL UNIQUE,
+                filename TEXT NOT NULL,
+                size INTEGER NOT NULL,
+                content_type TEXT NOT NULL,
+                path TEXT NOT NULL,
+                uploaded_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                download_count INTEGER NOT NULL,
+                max_downloads INTEGER NOT NULL
+            )
+            "#,
+        )
+        .execute(pool)
+        .await?;
+
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_uploaded_files_code ON uploaded_files(code)")
+            .execute(pool)
+            .await?;
+
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_uploaded_files_expires_at ON uploaded_files(expires_at)",
         )
         .execute(pool)
         .await?;
@@ -278,6 +321,87 @@ impl TransferDatabase {
         Ok(())
     }
 
+    pub async fn save_uploaded_file(&self, file: &UploadedFileRecord) -> Result<()> {
+        sqlx::query(
+            r#"
+            INSERT OR REPLACE INTO uploaded_files
+            (id, code, filename, size, content_type, path, uploaded_at, expires_at, download_count, max_downloads)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            "#,
+        )
+        .bind(&file.id)
+        .bind(&file.code)
+        .bind(&file.filename)
+        .bind(file.size as i64)
+        .bind(&file.content_type)
+        .bind(file.path.to_string_lossy().to_string())
+        .bind(file.uploaded_at.to_rfc3339())
+        .bind(file.expires_at.to_rfc3339())
+        .bind(file.download_count as i64)
+        .bind(file.max_downloads as i64)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn get_uploaded_file_by_code(
+        &self,
+        code: &str,
+    ) -> Result<Option<UploadedFileRecord>> {
+        let row = sqlx::query("SELECT * FROM uploaded_files WHERE code = ?")
+            .bind(code)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        if let Some(row) = row {
+            Ok(Some(Self::row_to_uploaded_file_record(row)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn uploaded_file_code_exists(&self, code: &str) -> Result<bool> {
+        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM uploaded_files WHERE code = ?")
+            .bind(code)
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(count > 0)
+    }
+
+    pub async fn increment_uploaded_file_download_count(&self, code: &str) -> Result<()> {
+        sqlx::query("UPDATE uploaded_files SET download_count = download_count + 1 WHERE code = ?")
+            .bind(code)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn delete_uploaded_file(&self, code: &str) -> Result<()> {
+        sqlx::query("DELETE FROM uploaded_files WHERE code = ?")
+            .bind(code)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn get_expired_uploaded_files(&self) -> Result<Vec<UploadedFileRecord>> {
+        let rows = sqlx::query("SELECT * FROM uploaded_files WHERE expires_at <= ?")
+            .bind(Utc::now().to_rfc3339())
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut files = Vec::new();
+        for row in rows {
+            files.push(Self::row_to_uploaded_file_record(row)?);
+        }
+
+        Ok(files)
+    }
+
     pub async fn cleanup_old_records(&self, days: i64) -> Result<usize> {
         let cutoff = Utc::now() - chrono::Duration::days(days);
 
@@ -373,6 +497,23 @@ impl TransferDatabase {
             is_online: row.try_get("is_online")?,
             capabilities: row.try_get("capabilities")?,
             version: row.try_get("version")?,
+        })
+    }
+
+    fn row_to_uploaded_file_record(row: sqlx::sqlite::SqliteRow) -> Result<UploadedFileRecord> {
+        Ok(UploadedFileRecord {
+            id: row.try_get("id")?,
+            code: row.try_get("code")?,
+            filename: row.try_get("filename")?,
+            size: row.try_get::<i64, _>("size")? as u64,
+            content_type: row.try_get("content_type")?,
+            path: PathBuf::from(row.try_get::<String, _>("path")?),
+            uploaded_at: DateTime::parse_from_rfc3339(&row.try_get::<String, _>("uploaded_at")?)?
+                .with_timezone(&Utc),
+            expires_at: DateTime::parse_from_rfc3339(&row.try_get::<String, _>("expires_at")?)?
+                .with_timezone(&Utc),
+            download_count: row.try_get::<i64, _>("download_count")? as u32,
+            max_downloads: row.try_get::<i64, _>("max_downloads")? as u32,
         })
     }
 }

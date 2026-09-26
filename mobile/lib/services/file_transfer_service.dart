@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -8,13 +9,10 @@ import 'package:uuid/uuid.dart';
 import '../config/app_config.dart';
 
 class FileTransferService {
-  static  final String _baseUrl = AppConfig.backendBaseUrl;
-  static  final String _wsUrl = AppConfig.websocketUrl;
-  
   WebSocketChannel? _channel;
   final Map<String, Function(double)> _progressCallbacks = {};
   final Map<String, Function(String)> _statusCallbacks = {};
-  
+
   // Singleton pattern
   static final FileTransferService _instance = FileTransferService._internal();
   factory FileTransferService() => _instance;
@@ -24,30 +22,30 @@ class FileTransferService {
     // Request storage permissions
     await Permission.storage.request();
     await Permission.manageExternalStorage.request();
-    
+
     // Connect to WebSocket for real-time updates
     await _connectWebSocket();
   }
 
   Future<void> _connectWebSocket() async {
     try {
-      _channel = WebSocketChannel.connect(Uri.parse(_wsUrl));
-      
+      _channel = WebSocketChannel.connect(Uri.parse(AppConfig.websocketUrl));
+
       _channel!.stream.listen(
         (data) {
           _handleWebSocketMessage(data);
         },
         onError: (error) {
-          print('WebSocket error: $error');
+          debugPrint('WebSocket error: $error');
           _reconnectWebSocket();
         },
         onDone: () {
-          print('WebSocket connection closed');
+          debugPrint('WebSocket connection closed');
           _reconnectWebSocket();
         },
       );
     } catch (e) {
-      print('Failed to connect WebSocket: $e');
+      debugPrint('Failed to connect WebSocket: $e');
     }
   }
 
@@ -62,7 +60,7 @@ class FileTransferService {
       final message = jsonDecode(data);
       final type = message['type'];
       final transferId = message['transferId'];
-      
+
       switch (type) {
         case 'progress':
           final progress = message['progress'] as double;
@@ -80,16 +78,18 @@ class FileTransferService {
           break;
       }
     } catch (e) {
-      print('Error parsing WebSocket message: $e');
+      debugPrint('Error parsing WebSocket message: $e');
     }
   }
 
-  Future<String> sendFile(File file, String targetDeviceId, {
+  Future<String> sendFile(
+    File file,
+    String targetDeviceId, {
     Function(double)? onProgress,
     Function(String)? onStatus,
   }) async {
     final transferId = const Uuid().v4();
-    
+
     if (onProgress != null) {
       _progressCallbacks[transferId] = onProgress;
     }
@@ -101,41 +101,41 @@ class FileTransferService {
       // Get file info
       final fileSize = await file.length();
       final fileName = file.path.split('/').last;
-      
+
       // Create multipart request
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('$_baseUrl${AppConfig.apiTransfer}'),
+        Uri.parse(AppConfig.getFullUrl(AppConfig.apiTransfer)),
       );
-      
+
       // Add file
       final fileStream = http.ByteStream(file.openRead());
       final length = await file.length();
-      
+
       final multipartFile = http.MultipartFile(
         'file',
         fileStream,
         length,
         filename: fileName,
       );
-      
+
       request.files.add(multipartFile);
-      
+
       // Add metadata
       request.fields['transferId'] = transferId;
       request.fields['targetDeviceId'] = targetDeviceId;
       request.fields['fileName'] = fileName;
       request.fields['fileSize'] = fileSize.toString();
-      
+
       // Send request
       final response = await request.send();
-      
+
       if (response.statusCode == 200) {
         final responseData = await response.stream.bytesToString();
         final responseJson = jsonDecode(responseData);
-        
+
         if (responseJson['success'] == true) {
-          return transferId;
+          return responseJson['transferId']?.toString() ?? transferId;
         } else {
           throw Exception(responseJson['error'] ?? 'Transfer failed');
         }
@@ -143,12 +143,13 @@ class FileTransferService {
         throw Exception('HTTP ${response.statusCode}');
       }
     } catch (e) {
-      print('Error sending file: $e');
+      debugPrint('Error sending file: $e');
       rethrow;
     }
   }
 
-  Future<void> receiveFile(String transferId, {
+  Future<void> receiveFile(
+    String transferId, {
     Function(double)? onProgress,
     Function(String)? onStatus,
   }) async {
@@ -169,7 +170,7 @@ class FileTransferService {
 
       // Start download
       final response = await http.get(
-        Uri.parse('$_baseUrl${AppConfig.apiDownload}/$transferId'),
+        Uri.parse('${AppConfig.getFullUrl(AppConfig.apiDownload)}/$transferId'),
       );
 
       if (response.statusCode == 200) {
@@ -177,7 +178,8 @@ class FileTransferService {
         final contentDisposition = response.headers['content-disposition'];
         String fileName = 'received_file';
         if (contentDisposition != null) {
-          final filenameMatch = RegExp(r'filename="([^"]+)"').firstMatch(contentDisposition);
+          final filenameMatch =
+              RegExp(r'filename="([^"]+)"').firstMatch(contentDisposition);
           if (filenameMatch != null) {
             fileName = filenameMatch.group(1)!;
           }
@@ -185,13 +187,13 @@ class FileTransferService {
 
         final file = File('${downloadsDir.path}/$fileName');
         await file.writeAsBytes(response.bodyBytes);
-        
+
         onStatus?.call('completed');
       } else {
         throw Exception('Download failed: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error receiving file: $e');
+      debugPrint('Error receiving file: $e');
       onStatus?.call('failed');
       rethrow;
     }
@@ -200,7 +202,7 @@ class FileTransferService {
   Future<List<Map<String, dynamic>>> getTransferHistory() async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl${AppConfig.apiTransfers}'),
+        Uri.parse(AppConfig.getFullUrl(AppConfig.apiTransfers)),
       );
 
       if (response.statusCode == 200) {
@@ -210,7 +212,7 @@ class FileTransferService {
         throw Exception('Failed to get transfer history');
       }
     } catch (e) {
-      print('Error getting transfer history: $e');
+      debugPrint('Error getting transfer history: $e');
       return [];
     }
   }
@@ -218,7 +220,7 @@ class FileTransferService {
   Future<Map<String, dynamic>?> getTransferStatus(String transferId) async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl${AppConfig.apiTransfer}/$transferId'),
+        Uri.parse('${AppConfig.getFullUrl(AppConfig.apiTransfer)}/$transferId'),
       );
 
       if (response.statusCode == 200) {
@@ -227,7 +229,7 @@ class FileTransferService {
         return null;
       }
     } catch (e) {
-      print('Error getting transfer status: $e');
+      debugPrint('Error getting transfer status: $e');
       return null;
     }
   }
@@ -235,17 +237,17 @@ class FileTransferService {
   Future<void> cancelTransfer(String transferId) async {
     try {
       await http.delete(
-        Uri.parse('$_baseUrl${AppConfig.apiTransfer}/$transferId'),
+        Uri.parse('${AppConfig.getFullUrl(AppConfig.apiTransfer)}/$transferId'),
       );
     } catch (e) {
-      print('Error canceling transfer: $e');
+      debugPrint('Error canceling transfer: $e');
     }
   }
 
   Future<List<Map<String, dynamic>>> getAvailableDevices() async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl${AppConfig.apiDevices}'),
+        Uri.parse(AppConfig.getFullUrl(AppConfig.apiDevices)),
       );
 
       if (response.statusCode == 200) {
@@ -255,7 +257,7 @@ class FileTransferService {
         throw Exception('Failed to get devices');
       }
     } catch (e) {
-      print('Error getting devices: $e');
+      debugPrint('Error getting devices: $e');
       return [];
     }
   }
@@ -265,4 +267,4 @@ class FileTransferService {
     _progressCallbacks.clear();
     _statusCallbacks.clear();
   }
-} 
+}

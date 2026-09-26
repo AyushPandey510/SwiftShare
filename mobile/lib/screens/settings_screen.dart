@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:swiftshare_mobile/providers/app_provider.dart';
@@ -18,22 +19,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildDeviceSection(context),
-          const SizedBox(height: 24),
-          _buildNetworkSection(context),
-          const SizedBox(height: 24),
-          _buildTransferSection(context),
-          const SizedBox(height: 24),
-          _buildAppSection(context),
-          const SizedBox(height: 24),
-          _buildAboutSection(context),
-        ],
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+          children: [
+            Text(
+              'Settings',
+              style: AppTextStyles.heading2.copyWith(
+                color: Colors.black,
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Manage preferences for sharing and your device.',
+              style: AppTextStyles.body2.copyWith(
+                color: const Color(0xFF60708C),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildDeviceSection(context),
+            if (kDebugMode) ...[
+              const SizedBox(height: 24),
+              _buildNetworkSection(context),
+            ],
+            const SizedBox(height: 24),
+            _buildTransferSection(context),
+            const SizedBox(height: 24),
+            _buildAppSection(context),
+            const SizedBox(height: 24),
+            _buildAboutSection(context),
+          ],
+        ),
       ),
     );
   }
@@ -42,9 +62,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Consumer<DeviceProvider>(
       builder: (context, deviceProvider, child) {
         return Card(
-          elevation: 2,
+          elevation: 0,
+          color: Colors.white,
+          surfaceTintColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(color: Color(0xFFE5EBF4)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -61,16 +84,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _SettingsItem(
                   icon: Icons.device_hub,
                   title: 'Device Name',
-                  subtitle: deviceProvider.devices.isNotEmpty 
-                      ? deviceProvider.devices.first.name 
+                  subtitle: deviceProvider.devices.isNotEmpty
+                      ? deviceProvider.devices.first.name
                       : 'Unknown Device',
                   onTap: () => _showDeviceNameDialog(context),
                 ),
                 _SettingsItem(
                   icon: Icons.wifi,
                   title: 'Local IP Address',
-                  subtitle: deviceProvider.localIpAddress.isNotEmpty 
-                      ? deviceProvider.localIpAddress 
+                  subtitle: deviceProvider.localIpAddress.isNotEmpty
+                      ? deviceProvider.localIpAddress
                       : 'Not connected',
                 ),
                 _SettingsItem(
@@ -100,9 +123,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildNetworkSection(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: 0,
+      color: Colors.white,
+      surfaceTintColor: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Color(0xFFE5EBF4)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -120,20 +146,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
               future: NetworkUtils.getBackendStatus(),
               builder: (context, snapshot) {
                 final isConnected = snapshot.data?['isConnected'] ?? false;
-                final backendUrl = snapshot.data?['backendUrl'] ?? AppConfig.backendBaseUrl;
-                
+                final backendUrl =
+                    snapshot.data?['backendUrl'] ?? AppConfig.backendBaseUrl;
+
                 return Column(
                   children: [
                     _SettingsItem(
                       icon: Icons.settings_ethernet,
                       title: 'Backend Server',
                       subtitle: backendUrl,
+                      onTap: () => _showBackendConfigDialog(context),
                       trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isConnected 
-                              ? Colors.green.withOpacity(0.1)
-                              : Colors.red.withOpacity(0.1),
+                          color: isConnected
+                              ? Colors.green.withValues(alpha: 0.1)
+                              : Colors.red.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -141,7 +170,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             color: isConnected ? Colors.green : Colors.red,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -178,9 +207,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Consumer<TransferProvider>(
       builder: (context, transferProvider, child) {
         return Card(
-          elevation: 2,
+          elevation: 0,
+          color: Colors.white,
+          surfaceTintColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(color: Color(0xFFE5EBF4)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -240,9 +272,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Consumer<AppProvider>(
       builder: (context, appProvider, child) {
         return Card(
-          elevation: 2,
+          elevation: 0,
+          color: Colors.white,
+          surfaceTintColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(color: Color(0xFFE5EBF4)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -299,9 +334,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAboutSection(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: 0,
+      color: Colors.white,
+      surfaceTintColor: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: Color(0xFFE5EBF4)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -361,8 +399,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             hintText: 'My Device',
           ),
           controller: TextEditingController(
-            text: context.read<DeviceProvider>().devices.isNotEmpty 
-                ? context.read<DeviceProvider>().devices.first.name 
+            text: context.read<DeviceProvider>().devices.isNotEmpty
+                ? context.read<DeviceProvider>().devices.first.name
                 : '',
           ),
         ),
@@ -545,7 +583,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _showBackendConfigDialog(BuildContext context) {
     final controller = TextEditingController(text: AppConfig.backendBaseUrl);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -559,7 +597,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               controller: controller,
               decoration: const InputDecoration(
                 labelText: 'Server URL',
-                hintText: 'http://192.168.1.100:8080',
+                hintText: 'http://192.168.1.100:3001',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -571,11 +609,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              // TODO: Implement backend URL update
+            onPressed: () async {
+              await AppConfig.setBackendUrls(controller.text);
+              if (!mounted || !context.mounted) return;
               Navigator.pop(context);
+              setState(() {});
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Backend URL updated to: ${controller.text}')),
+                SnackBar(
+                    content:
+                        Text('Backend URL updated to: ${controller.text}')),
               );
             },
             child: const Text('Save'),
@@ -604,16 +646,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       final success = await NetworkUtils.autoConfigureBackend();
+      if (!mounted || !context.mounted) return;
       Navigator.pop(context);
-      
+
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Backend server configured: ${AppConfig.backendBaseUrl}'),
+            content:
+                Text('Backend server configured: ${AppConfig.backendBaseUrl}'),
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // Refresh the settings screen to show updated status
         setState(() {});
       } else {
@@ -622,10 +666,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           builder: (context) => AlertDialog(
             title: const Text('No Backend Server Found'),
             content: const Text(
-              'No backend server was detected on your network. '
-              'Please make sure the backend is running and try again. '
-              'You can also manually configure the backend URL in the settings.'
-            ),
+                'No backend server was detected on your network. '
+                'Please make sure the backend is running and try again. '
+                'You can also manually configure the backend URL in the settings.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -636,6 +679,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     } catch (e) {
+      if (!mounted || !context.mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -665,16 +709,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       final isConnected = await NetworkUtils.testBackendConnection();
+      if (!mounted || !context.mounted) return;
       Navigator.pop(context);
-      
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(isConnected ? 'Connection Successful' : 'Connection Failed'),
+          title:
+              Text(isConnected ? 'Connection Successful' : 'Connection Failed'),
           content: Text(
-            isConnected 
-              ? 'Successfully connected to the backend server.'
-              : 'Failed to connect to the backend server. Please check your network settings.',
+            isConnected
+                ? 'Successfully connected to the backend server.'
+                : 'Failed to connect to the backend server. Please check your network settings.',
           ),
           actions: [
             TextButton(
@@ -685,6 +731,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
     } catch (e) {
+      if (!mounted || !context.mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error testing connection: $e')),
@@ -711,8 +758,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       final networkInfo = await NetworkUtils.getNetworkInfo();
+      if (!mounted || !context.mounted) return;
       Navigator.pop(context);
-      
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -722,10 +770,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                _NetworkInfoItem('Local IP', networkInfo['localIp'] ?? 'Unknown'),
-                _NetworkInfoItem('Gateway IP', networkInfo['gatewayIp'] ?? 'Unknown'),
-                _NetworkInfoItem('Backend URL', networkInfo['backendUrl'] ?? 'Unknown'),
-                _NetworkInfoItem('Connected', networkInfo['isConnected'] ?? 'Unknown'),
+                _NetworkInfoItem(
+                    'Local IP', networkInfo['localIp'] ?? 'Unknown'),
+                _NetworkInfoItem(
+                    'Gateway IP', networkInfo['gatewayIp'] ?? 'Unknown'),
+                _NetworkInfoItem(
+                    'Backend URL', networkInfo['backendUrl'] ?? 'Unknown'),
+                _NetworkInfoItem(
+                    'Connected', networkInfo['isConnected'] ?? 'Unknown'),
               ],
             ),
           ),
@@ -738,6 +790,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
     } catch (e) {
+      if (!mounted || !context.mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error getting network info: $e')),
@@ -797,8 +850,8 @@ class _SettingsItem extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
+          color: AppColors.primary.withValues(alpha: 0.09),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
           icon,
@@ -809,18 +862,18 @@ class _SettingsItem extends StatelessWidget {
       title: Text(
         title,
         style: AppTextStyles.body1.copyWith(
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
       subtitle: Text(
         subtitle,
         style: AppTextStyles.caption.copyWith(
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
         ),
       ),
       trailing: trailing,
       onTap: onTap,
     );
   }
-} 
+}

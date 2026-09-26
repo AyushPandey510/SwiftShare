@@ -20,20 +20,20 @@ class TransferSummaryWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
                 spreadRadius: 0,
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 15,
                 offset: const Offset(0, 6),
                 spreadRadius: 0,
               ),
             ],
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.08),
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.08),
               width: 1,
             ),
           ),
@@ -59,10 +59,10 @@ class TransferSummaryWidget extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.15),
+                          color: AppColors.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: AppColors.primary.withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),
@@ -116,7 +116,7 @@ class TransferSummaryWidget extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: [
                           Colors.transparent,
-                          Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                          Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
                           Colors.transparent,
                         ],
                       ),
@@ -164,10 +164,10 @@ class _SummaryItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: color.withOpacity(0.2),
+          color: color.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -177,7 +177,7 @@ class _SummaryItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -198,7 +198,7 @@ class _SummaryItem extends StatelessWidget {
           Text(
             title,
             style: AppTextStyles.caption.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -226,7 +226,7 @@ class _ActiveTransferItem extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -248,7 +248,7 @@ class _ActiveTransferItem extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
+                  color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -264,7 +264,7 @@ class _ActiveTransferItem extends StatelessWidget {
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: transfer.progress,
-            backgroundColor: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            backgroundColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
           const SizedBox(height: 8),
@@ -273,13 +273,13 @@ class _ActiveTransferItem extends StatelessWidget {
               Icon(
                 Icons.access_time,
                 size: 14,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               const SizedBox(width: 4),
               Text(
                 transferProvider.formatTransferTime(transfer.startTime),
                 style: AppTextStyles.caption.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -287,7 +287,7 @@ class _ActiveTransferItem extends StatelessWidget {
               Text(
                 transferProvider.formatFileSize(transfer.fileSize),
                 style: AppTextStyles.caption.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),

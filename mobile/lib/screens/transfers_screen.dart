@@ -30,33 +30,97 @@ class _TransfersScreenState extends State<TransfersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transfers'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'All'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Failed'),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Transfers',
+                    style: AppTextStyles.heading2.copyWith(
+                      color: Colors.black,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Track nearby sends and completed downloads.',
+                    style: AppTextStyles.body2.copyWith(
+                      color: const Color(0xFF60708C),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Container(
+                    height: 44,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF3FA),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE4EAF3)),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      dividerColor: Colors.transparent,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicator: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(11),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      labelColor: AppColors.primary,
+                      unselectedLabelColor: const Color(0xFF64748B),
+                      labelStyle: AppTextStyles.caption.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                      unselectedLabelStyle: AppTextStyles.caption.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                      tabs: const [
+                        Tab(text: 'All'),
+                        Tab(text: 'Completed'),
+                        Tab(text: 'Failed'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildTransfersList(context, null),
+                  _buildTransfersList(context, TransferStatus.completed),
+                  _buildTransfersList(context, TransferStatus.failed),
+                ],
+              ),
+            ),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildTransfersList(context, null),
-          _buildTransfersList(context, TransferStatus.completed),
-          _buildTransfersList(context, TransferStatus.failed),
-        ],
       ),
     );
   }
 
-  Widget _buildTransfersList(BuildContext context, TransferStatus? filterStatus) {
+  Widget _buildTransfersList(
+      BuildContext context, TransferStatus? filterStatus) {
     return Consumer<TransferProvider>(
       builder: (context, transferProvider, child) {
         List<TransferItem> transfers;
-        
+
         if (filterStatus == null) {
           transfers = transferProvider.transfers;
         } else {
@@ -70,7 +134,7 @@ class _TransfersScreenState extends State<TransfersScreen>
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           itemCount: transfers.length,
           itemBuilder: (context, index) {
             final transfer = transfers[index];
@@ -115,20 +179,29 @@ class _TransfersScreenState extends State<TransfersScreen>
             Icon(
               icon,
               size: 64,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
               title,
               style: AppTextStyles.heading3.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               style: AppTextStyles.body2.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.5),
               ),
               textAlign: TextAlign.center,
             ),
@@ -150,11 +223,19 @@ class _TransferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5EBF4)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF53617A).withValues(alpha: 0.08),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -181,7 +262,10 @@ class _TransferCard extends StatelessWidget {
                       Text(
                         'To: ${transfer.targetDevice}',
                         style: AppTextStyles.caption.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -196,20 +280,29 @@ class _TransferCard extends StatelessWidget {
                 Icon(
                   Icons.access_time,
                   size: 14,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   _formatDateTime(transfer.startTime),
                   style: AppTextStyles.caption.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   transferProvider.formatFileSize(transfer.fileSize),
                   style: AppTextStyles.caption.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -219,8 +312,12 @@ class _TransferCard extends StatelessWidget {
               const SizedBox(height: 12),
               LinearProgressIndicator(
                 value: transfer.progress,
-                backgroundColor: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .outline
+                    .withValues(alpha: 0.2),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
               const SizedBox(height: 8),
               Row(
@@ -236,13 +333,17 @@ class _TransferCard extends StatelessWidget {
                   Text(
                     transferProvider.formatSpeed(transfer.speed),
                     style: AppTextStyles.caption.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
                     ),
                   ),
                 ],
               ),
             ],
-            if (transfer.status == TransferStatus.completed && transfer.endTime != null) ...[
+            if (transfer.status == TransferStatus.completed &&
+                transfer.endTime != null) ...[
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -298,7 +399,7 @@ class _TransferCard extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, color: color, size: 20),
@@ -335,7 +436,7 @@ class _TransferCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -362,4 +463,4 @@ class _TransferCard extends StatelessWidget {
       return 'Just now';
     }
   }
-} 
+}
