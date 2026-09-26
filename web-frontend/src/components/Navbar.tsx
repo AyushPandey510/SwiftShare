@@ -1,4 +1,4 @@
-import { Download, Share2, Upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
@@ -6,10 +6,11 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 border-b border-border bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
-            <Share2 className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl font-bold text-foreground sm:text-2xl">SwiftShare</span>
+          <img src="/logo-mark.svg" alt="" width={40} height={40} className="h-10 w-10 shrink-0" />
+          <span className="text-xl font-bold tracking-tight sm:text-2xl">
+            <span className="text-[#1E1B4B]">Swift</span>
+            <span className="text-[#4F46E5]">Share</span>
+          </span>
         </Link>
 
         <div className="hidden items-center gap-6 lg:flex">

@@ -43,9 +43,11 @@ const Sidebar = () => {
               exit={{ opacity: 0 }}
               className="flex items-center space-x-3"
             >
-              <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-2xl tracking-tight">S</span>
-              </div>
+              <img
+                src={`${process.env.PUBLIC_URL}/logo-mark.svg`}
+                alt=""
+                className="w-10 h-10 drop-shadow-md"
+              />
               <span className="text-2xl font-extrabold text-white tracking-wide drop-shadow-lg">
                 SwiftShare
               </span>

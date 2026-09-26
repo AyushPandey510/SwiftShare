@@ -13,12 +13,16 @@ import 'package:swiftshare_mobile/utils/theme.dart';
 import 'package:swiftshare_mobile/utils/network_utils.dart';
 import 'package:swiftshare_mobile/config/app_config.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await AppConfig.loadSavedBackendUrl();
+void main() {
+  final binding = WidgetsFlutterBinding.ensureInitialized();
 
-  // Set preferred orientations
-  await SystemChrome.setPreferredOrientations([
+  // Keep the native splash on screen until the splash logo is decoded, so the
+  // first Flutter frame already shows it (no blank or half-drawn frame).
+  // SplashScreen calls allowFirstFrame() once the image is cached.
+  binding.deferFirstFrame();
+
+  // Not awaited: nothing here should delay the first frame.
+  SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
@@ -57,9 +61,19 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
+// Splash logo. Size and position must match the native Android splash
+// (res/drawable-*/splash_logo.png and splash_icon.png): 140dp, screen centre.
+const String _splashLogoAsset = 'assets/images/splash_logo.png';
+const double _logoSize = 140;
+// Shortest time the splash stays up, so the spinner never just flickers.
+const Duration _minSplashTime = Duration(milliseconds: 600);
+const double _ringStroke = _logoSize * 24 / 488;
+const double _ringBox = _logoSize * (2 * 220 + 24) / 488;
+
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
+  bool _firstFrameReleased = false;
 
   @override
   void initState() {
@@ -73,9 +87,23 @@ class _SplashScreenState extends State<SplashScreen>
     _initializeApp();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_firstFrameReleased) return;
+    _firstFrameReleased = true;
+    // Decode the logo, then let Flutter paint. A 1 s cap makes sure a slow
+    // or failed decode can never leave the user stuck on the native splash.
+    precacheImage(const AssetImage(_splashLogoAsset), context)
+        .timeout(const Duration(seconds: 1), onTimeout: () {})
+        .whenComplete(WidgetsBinding.instance.allowFirstFrame);
+  }
+
   Future<void> _initializeApp() async {
+    // Loaded here instead of before runApp(), so it no longer delays startup.
+    await AppConfig.loadSavedBackendUrl().catchError((_) {});
     await Future.wait([
-      Future<void>.delayed(const Duration(milliseconds: 1400)),
+      Future<void>.delayed(_minSplashTime),
       NetworkUtils.autoConfigureBackend().catchError((_) => false),
     ]);
 
@@ -95,62 +123,73 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ScaleTransition(
-              scale: Tween<double>(begin: 0.96, end: 1.04).animate(
+      // Logo is pinned to the exact screen centre, like the native splash,
+      // so the handoff from Android's splash to Flutter doesn't move it.
+      body: Stack(
+        children: [
+          Center(
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 1.0, end: 1.04).animate(
                 CurvedAnimation(
                   parent: _animationController,
                   curve: Curves.easeInOut,
                 ),
               ),
-              child: Container(
-                width: 82,
-                height: 82,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.secondary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.28),
-                      blurRadius: 24,
-                      offset: const Offset(0, 12),
+              child: SizedBox(
+                width: _logoSize,
+                height: _logoSize,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Spinner runs on the logo's ring (ring r=220, stroke 24
+                    // in a 488-unit viewBox). The track is the ring colour, and
+                    // the logo is drawn on top so the device icons stay visible.
+                    SizedBox(
+                      width: _ringBox,
+                      height: _ringBox,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: _ringStroke,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: Color(0xFFEEF2FF),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      ),
+                    ),
+                    Image.asset(
+                      _splashLogoAsset,
+                      width: _logoSize,
+                      height: _logoSize,
+                      semanticLabel: 'SwiftShare logo',
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.share_rounded,
-                  size: 42,
-                  color: Colors.white,
+              ),
+            ),
+          ),
+          Center(
+            child: Transform.translate(
+              offset: const Offset(0, _logoSize / 2 + 44),
+              child: Text.rich(
+                TextSpan(
+                  children: const [
+                    TextSpan(
+                      text: 'Swift',
+                      style: TextStyle(color: Color(0xFF1E1B4B)),
+                    ),
+                    TextSpan(
+                      text: 'Share',
+                      style: TextStyle(color: Color(0xFF4F46E5)),
+                    ),
+                  ],
+                  style: AppTextStyles.heading2.copyWith(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 22),
-            Text(
-              'SwiftShare',
-              style: AppTextStyles.heading2.copyWith(
-                color: Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 44),
-            const SizedBox(
-              width: 30,
-              height: 30,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

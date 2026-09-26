@@ -1,4 +1,4 @@
-import { Github, Linkedin, Share2, Twitter } from "lucide-react";
+import { Github, Linkedin, Twitter } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCases, formatFileSize, MAX_UPLOAD_BYTES } from "@/lib/site";
 
@@ -9,10 +9,11 @@ const Footer = () => {
         <div className="grid gap-8 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div>
             <div className="mb-4 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Share2 className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">SwiftShare</span>
+              <img src="/logo-mark-dark.svg" alt="" width={40} height={40} className="h-10 w-10" />
+              <span className="text-xl font-bold tracking-tight">
+                <span className="text-[#E0E7FF]">Swift</span>
+                <span className="text-[#818CF8]">Share</span>
+              </span>
             </div>
             <p className="max-w-md text-sm leading-6 text-gray-400">
               Send a file. Share a link. Get on with your day.
