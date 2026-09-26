@@ -6,6 +6,15 @@ class AppConfig {
     defaultValue: 'https://swiftshare-e4dh.onrender.com',
   );
   static const String localDevelopmentBackendBaseUrl = 'http://localhost:3001';
+
+  /// True when this build points at a hosted server (the release default, or
+  /// any non-LAN BACKEND_URL). Such builds never switch to a LAN backend on
+  /// their own; only the user can pick one in Settings.
+  static bool get usesHostedBackend => !isLocalBackendUrl(defaultBackendBaseUrl);
+
+  /// True when the app is currently talking to the build's default server.
+  static bool get isUsingDefaultBackend =>
+      _backendBaseUrl == defaultBackendBaseUrl;
   static const String _backendUrlPreferenceKey = 'backendBaseUrl';
 
   // Backend configuration - will be dynamically set
@@ -89,10 +98,9 @@ class AppConfig {
   static Future<void> loadSavedBackendUrl() async {
     final prefs = await SharedPreferences.getInstance();
     final savedUrl = prefs.getString(_backendUrlPreferenceKey);
-    const hasBuildBackend =
-        defaultBackendBaseUrl != localDevelopmentBackendBaseUrl;
-
-    if (hasBuildBackend && _isLocalBackendUrl(savedUrl)) {
+    // A hosted build must not come back up on a LAN address saved earlier
+    // (e.g. by the old auto-detect), otherwise it only works on one Wi-Fi.
+    if (usesHostedBackend && isLocalBackendUrl(savedUrl)) {
       await prefs.remove(_backendUrlPreferenceKey);
       return;
     }
@@ -125,7 +133,14 @@ class AppConfig {
     return _websocketUrl;
   }
 
-  static bool _isLocalBackendUrl(String? url) {
+  /// Go back to the server this build was made for and forget any override.
+  static Future<void> resetToDefaultBackend() async {
+    await setBackendUrls(defaultBackendBaseUrl, persist: false);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_backendUrlPreferenceKey);
+  }
+
+  static bool isLocalBackendUrl(String? url) {
     if (url == null || url.trim().isEmpty) return false;
 
     final host = Uri.tryParse(url.trim())?.host.toLowerCase();

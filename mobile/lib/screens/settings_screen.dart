@@ -175,10 +175,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ),
+                    if (!AppConfig.isUsingDefaultBackend)
+                      _SettingsItem(
+                        icon: Icons.cloud_done_outlined,
+                        title: 'Use SwiftShare Cloud',
+                        subtitle: AppConfig.defaultBackendBaseUrl,
+                        onTap: () async {
+                          await AppConfig.resetToDefaultBackend();
+                          if (!mounted || !context.mounted) return;
+                          setState(() {});
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Switched back to SwiftShare Cloud'),
+                            ),
+                          );
+                        },
+                      ),
                     _SettingsItem(
                       icon: Icons.wifi_find,
-                      title: 'Auto-detect Server',
-                      subtitle: 'Automatically find backend server',
+                      title: 'Find Server on Wi-Fi',
+                      subtitle: 'For a SwiftShare backend running on your network',
                       onTap: () => _detectBackendServer(context),
                     ),
                     _SettingsItem(

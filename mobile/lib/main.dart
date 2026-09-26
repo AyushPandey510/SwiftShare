@@ -124,7 +124,9 @@ class _SplashScreenState extends State<SplashScreen>
     await AppConfig.loadSavedBackendUrl().catchError((_) {});
     await Future.wait([
       Future<void>.delayed(_minSplashTime),
-      NetworkUtils.autoConfigureBackend().catchError((_) => false),
+      // Release builds stay on the hosted server (no LAN scan); see
+      // NetworkUtils.startupCheck.
+      NetworkUtils.startupCheck().catchError((_) {}),
     ]);
 
     if (!mounted) return;

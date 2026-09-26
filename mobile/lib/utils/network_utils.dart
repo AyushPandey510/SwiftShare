@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:network_info_plus/network_info_plus.dart';
@@ -26,7 +28,33 @@ class NetworkUtils {
     }
   }
 
-  /// Automatically detect and configure the backend server
+  /// Render's free plan sleeps after ~15 min idle and needs up to about a
+  /// minute to wake, so hosted checks get a generous timeout.
+  static const Duration _hostedTimeout = Duration(seconds: 60);
+  static const Duration _localTimeout = Duration(seconds: 3);
+
+  /// Called once from the splash screen. Never blocks for long.
+  ///
+  /// Hosted builds (release): keep the hosted server, and wake it in the
+  /// background. No LAN scan: that is what used to switch the release app to
+  /// a developer's local backend (and could hold the splash for minutes).
+  /// Local/dev builds: the old auto-detect behaviour.
+  static Future<void> startupCheck() async {
+    if (AppConfig.usesHostedBackend) {
+      unawaited(wakeBackend());
+      return;
+    }
+    await autoConfigureBackend()
+        .timeout(const Duration(seconds: 5), onTimeout: () => false);
+  }
+
+  /// Ping /health with a long timeout so a sleeping Render instance starts up
+  /// while the user is still on the first screen.
+  static Future<bool> wakeBackend() => testBackendConnection(timeout: _hostedTimeout);
+
+  /// Automatically detect and configure the backend server.
+  /// Only runs on startup for local/dev builds, or when the user taps
+  /// "Auto-detect server" in Settings.
   static Future<bool> autoConfigureBackend() async {
     debugPrint('Starting automatic backend configuration...');
     final originalUrl = AppConfig.backendBaseUrl;
@@ -133,11 +161,15 @@ class NetworkUtils {
   }
 
   /// Test connection to the configured backend
-  static Future<bool> testBackendConnection() async {
+  static Future<bool> testBackendConnection({Duration? timeout}) async {
+    final Duration limit = timeout ??
+        (AppConfig.isLocalBackendUrl(AppConfig.backendBaseUrl)
+            ? _localTimeout
+            : _hostedTimeout);
     try {
       final response = await http
           .get(Uri.parse('${AppConfig.backendBaseUrl}${AppConfig.apiHealth}'))
-          .timeout(const Duration(seconds: 3));
+          .timeout(limit);
       return response.statusCode >= 200 && response.statusCode < 500;
     } catch (e) {
       debugPrint('Backend connection test failed: $e');
