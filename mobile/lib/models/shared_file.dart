@@ -29,6 +29,23 @@ class SharedFile {
 
   int get downloadsLeft => (maxDownloads - downloadCount).clamp(0, maxDownloads);
 
+  SharedFile copyWith({int? downloadCount}) {
+    return SharedFile(
+      id: id,
+      code: code,
+      filename: filename,
+      size: size,
+      type: type,
+      url: url,
+      qrUrl: qrUrl,
+      expiresAt: expiresAt,
+      downloadCount: downloadCount ?? this.downloadCount,
+      maxDownloads: maxDownloads,
+      uploadedAt: uploadedAt,
+      uploadedBy: uploadedBy,
+    );
+  }
+
   factory SharedFile.fromJson(Map<String, dynamic> json) {
     return SharedFile(
       id: json['id']?.toString() ?? '',

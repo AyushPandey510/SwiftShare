@@ -79,7 +79,9 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
                   _SharedFileAccessCard(
                     file: file,
                     isDownloading: shareProvider.isDownloading,
-                    savedPath: shareProvider.downloadedFile?.file.path,
+                    progress: shareProvider.downloadProgress,
+                    downloadedBytes: shareProvider.downloadedBytes,
+                    downloaded: shareProvider.downloadedFile,
                     onDownload: shareProvider.downloadFoundFile,
                   ),
                 ],
@@ -254,15 +256,27 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
 class _SharedFileAccessCard extends StatelessWidget {
   final SharedFile file;
   final bool isDownloading;
-  final String? savedPath;
+  final double? progress;
+  final int downloadedBytes;
+  final DownloadedSharedFile? downloaded;
   final VoidCallback onDownload;
 
   const _SharedFileAccessCard({
     required this.file,
     required this.isDownloading,
-    required this.savedPath,
+    required this.progress,
+    required this.downloadedBytes,
+    required this.downloaded,
     required this.onDownload,
   });
+
+  String get _buttonLabel {
+    if (isDownloading) return 'Downloading...';
+    if (file.downloadsLeft == 0) {
+      return downloaded != null ? 'Downloaded' : 'Download limit reached';
+    }
+    return downloaded != null ? 'Download again' : 'Download file';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -301,20 +315,59 @@ class _SharedFileAccessCard extends StatelessWidget {
           _InfoRow(label: 'Downloads', value: '${file.downloadsLeft} left'),
           _InfoRow(
               label: 'Expires', value: file.expiresAt.toLocal().toString()),
-          if (savedPath != null) ...[
+          if (downloaded != null) ...[
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.08),
+                color: AppColors.success.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(
-                'Saved to $savedPath',
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.success,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.check_circle,
+                      color: AppColors.success, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      downloaded!.isPublic
+                          ? 'Saved to ${downloaded!.location}\nOpen it from the Files app > Downloads.'
+                          : 'Saved inside the app (${downloaded!.filename}). '
+                              'Allow storage access to save to Downloads.',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w700,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (isDownloading) ...[
+            const SizedBox(height: 14),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: progress, // null = indeterminate
+                minHeight: 6,
+                backgroundColor: context.palette.surfaceMuted,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              progress != null
+                  ? '${(progress! * 100).toStringAsFixed(0)}%  ·  '
+                      '${AppConfig.formatFileSize(downloadedBytes)} of '
+                      '${AppConfig.formatFileSize(file.size)}'
+                  : downloadedBytes > 0
+                      ? AppConfig.formatFileSize(downloadedBytes)
+                      : 'Connecting to server...',
+              style: AppTextStyles.caption.copyWith(
+                color: context.palette.textSecondary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -331,9 +384,14 @@ class _SharedFileAccessCard extends StatelessWidget {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.download, size: 20),
-              label: Text(isDownloading ? 'Downloading...' : 'Download file'),
-              onPressed: isDownloading ? null : onDownload,
+                  : Icon(
+                      downloaded != null ? Icons.download_done : Icons.download,
+                      size: 20),
+              label: Text(_buttonLabel),
+              // Disabled while downloading or when no downloads are left, so a
+              // second tap can't silently use up the last download.
+              onPressed:
+                  isDownloading || file.downloadsLeft == 0 ? null : onDownload,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,

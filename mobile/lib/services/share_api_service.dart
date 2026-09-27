@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../config/app_config.dart';
 import '../models/shared_file.dart';
@@ -16,14 +18,34 @@ class ShareApiException implements Exception {
   String toString() => message;
 }
 
+/// Called while a download streams in. [total] is null if the size is unknown.
+typedef DownloadProgressCallback = void Function(int received, int? total);
+
 class DownloadedSharedFile {
   final File file;
   final String filename;
 
+  /// Human-readable location, e.g. "Downloads/SwiftShare/report.pdf".
+  final String location;
+
+  /// True when saved to the phone's shared Downloads folder (visible in the
+  /// Files app); false when it had to fall back to the app's own storage.
+  final bool isPublic;
+
   const DownloadedSharedFile({
     required this.file,
     required this.filename,
+    required this.location,
+    required this.isPublic,
   });
+}
+
+class _SaveDir {
+  final Directory dir;
+  final String label;
+  final bool isPublic;
+
+  const _SaveDir(this.dir, this.label, this.isPublic);
 }
 
 class ShareApiService {
@@ -134,38 +156,162 @@ class ShareApiService {
     }
   }
 
-  Future<DownloadedSharedFile> downloadFile(SharedFile sharedFile) async {
+  /// Streams the file straight to disk (never holds it all in memory),
+  /// reports progress, and saves it to Downloads/SwiftShare so it shows up in
+  /// the phone's Files app.
+  Future<DownloadedSharedFile> downloadFile(
+    SharedFile sharedFile, {
+    DownloadProgressCallback? onProgress,
+  }) async {
+    final client = http.Client();
+    File? partial;
     try {
-      final response = await http.get(
+      final request = http.Request(
+        'GET',
         Uri.parse('${AppConfig.getFullUrl(AppConfig.apiDownload)}/${sharedFile.code}'),
       );
+      // Generous: the hosted server may need up to a minute to wake up.
+      final response =
+          await client.send(request).timeout(const Duration(seconds: 75));
 
       if (response.statusCode == 404) {
         throw const ShareApiException('No file was found for that code.');
       }
       if (response.statusCode == 410) {
-        throw const ShareApiException('This file is expired or has reached its download limit.');
+        throw const ShareApiException(
+            'This file has expired or reached its download limit.');
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw const ShareApiException('Download failed. Try again in a moment.');
       }
 
-      final directory = await getApplicationDocumentsDirectory();
-      final downloadsDir = Directory('${directory.path}/SwiftShare/Downloads');
-      if (!await downloadsDir.exists()) {
-        await downloadsDir.create(recursive: true);
+      final filename = _sanitizeFilename(
+          _filenameFromHeaders(response.headers) ?? sharedFile.filename);
+      final saveDir = await _resolveSaveDir();
+      final target = await _uniqueFile(saveDir.dir, filename);
+
+      // Write to "<name>.part" first so a broken download never leaves a
+      // half file that looks complete.
+      partial = File('${target.path}.part');
+      final sink = partial.openWrite();
+      final int? total = response.contentLength ??
+          (sharedFile.size > 0 ? sharedFile.size : null);
+      var received = 0;
+      try {
+        await for (final chunk
+            in response.stream.timeout(const Duration(seconds: 30))) {
+          sink.add(chunk);
+          received += chunk.length;
+          onProgress?.call(received, total);
+        }
+        await sink.flush();
+      } finally {
+        await sink.close();
       }
 
-      final filename = _filenameFromHeaders(response.headers) ?? sharedFile.filename;
-      final file = File('${downloadsDir.path}/${_sanitizeFilename(filename)}');
-      await file.writeAsBytes(response.bodyBytes);
+      if (total != null && received < total) {
+        throw const ShareApiException(
+            'The download was interrupted. Check your connection and try again.');
+      }
 
-      return DownloadedSharedFile(file: file, filename: filename);
+      final file = await partial.rename(target.path);
+      partial = null;
+      final savedName = file.uri.pathSegments.last;
+      return DownloadedSharedFile(
+        file: file,
+        filename: savedName,
+        location: '${saveDir.label}/$savedName',
+        isPublic: saveDir.isPublic,
+      );
     } on ShareApiException {
       rethrow;
+    } on TimeoutException {
+      throw const ShareApiException(
+          'The server took too long to respond. It may be waking up - try again in a minute.');
+    } on SocketException {
+      throw const ShareApiException(
+          'No connection to the server. Check your internet and try again.');
+    } on http.ClientException {
+      throw const ShareApiException(
+          'The connection dropped during the download. Please try again.');
+    } on FileSystemException {
+      throw const ShareApiException(
+          'Could not save the file on this phone. Check free storage and try again.');
     } catch (_) {
-      throw const ShareApiException('Could not save the downloaded file.');
+      throw const ShareApiException('Download failed. Please try again.');
+    } finally {
+      client.close();
+      final leftover = partial;
+      if (leftover != null) {
+        try {
+          if (await leftover.exists()) await leftover.delete();
+        } catch (_) {}
+      }
     }
+  }
+
+  /// Downloads/SwiftShare when we can write there, otherwise the app's own
+  /// folder (always writable, but only reachable from inside the app).
+  Future<_SaveDir> _resolveSaveDir() async {
+    final publicDir = await _publicDownloadsDir();
+    if (publicDir != null) {
+      if (await _canWrite(publicDir)) {
+        return _SaveDir(publicDir, 'Downloads/SwiftShare', true);
+      }
+      // Android 10 and older need the storage permission for Downloads.
+      if (Platform.isAndroid) {
+        final status = await Permission.storage.request();
+        if (status.isGranted && await _canWrite(publicDir)) {
+          return _SaveDir(publicDir, 'Downloads/SwiftShare', true);
+        }
+      }
+    }
+
+    final docs = await getApplicationDocumentsDirectory();
+    final appDir = Directory('${docs.path}/SwiftShare/Downloads');
+    await appDir.create(recursive: true);
+    return _SaveDir(appDir, 'SwiftShare app storage', false);
+  }
+
+  /// /storage/emulated/0/Download/SwiftShare on Android, null elsewhere.
+  Future<Directory?> _publicDownloadsDir() async {
+    if (!Platform.isAndroid) return null;
+    try {
+      final external = await getExternalStorageDirectory();
+      if (external == null) return null;
+      // e.g. /storage/emulated/0/Android/data/<package>/files -> /storage/emulated/0
+      final root = external.path.split('/Android/').first;
+      return Directory('$root/Download/SwiftShare');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<bool> _canWrite(Directory dir) async {
+    try {
+      await dir.create(recursive: true);
+      final probe = File('${dir.path}/.swiftshare_write_test');
+      await probe.writeAsString('ok', flush: true);
+      await probe.delete();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// "report.pdf" -> "report (1).pdf" if a file with that name already exists.
+  Future<File> _uniqueFile(Directory dir, String filename) async {
+    var candidate = File('${dir.path}/$filename');
+    if (!await candidate.exists()) return candidate;
+
+    final dot = filename.lastIndexOf('.');
+    final base = dot > 0 ? filename.substring(0, dot) : filename;
+    final ext = dot > 0 ? filename.substring(dot) : '';
+    for (var i = 1; i < 1000; i++) {
+      candidate = File('${dir.path}/$base ($i)$ext');
+      if (!await candidate.exists()) return candidate;
+    }
+    return File('${dir.path}/$base-${DateTime.now().millisecondsSinceEpoch}$ext');
   }
 
   static String? extractCode(String value) {

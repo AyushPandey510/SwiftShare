@@ -15,8 +15,13 @@ class ShareProvider extends ChangeNotifier {
   SharedFile? _uploadedFile;
   SharedFile? _foundFile;
   DownloadedSharedFile? _downloadedFile;
+  double? _downloadProgress; // 0..1, null = size unknown
+  int _downloadedBytes = 0;
+  DateTime _lastProgressNotify = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool get isUploading => _isUploading;
+  double? get downloadProgress => _downloadProgress;
+  int get downloadedBytes => _downloadedBytes;
   bool get isLookingUp => _isLookingUp;
   bool get isDownloading => _isDownloading;
   String? get error => _error;
@@ -94,20 +99,45 @@ class ShareProvider extends ChangeNotifier {
     final sharedFile = _foundFile;
     if (sharedFile == null) return null;
 
+    if (_isDownloading) return null; // ignore double taps
+
     _isDownloading = true;
     _error = null;
     _downloadedFile = null;
+    _downloadProgress = 0;
+    _downloadedBytes = 0;
     notifyListeners();
 
     try {
-      final downloaded = await _service.downloadFile(sharedFile);
+      final downloaded = await _service.downloadFile(
+        sharedFile,
+        onProgress: (received, total) {
+          _downloadedBytes = received;
+          _downloadProgress =
+              (total != null && total > 0)
+                  ? (received / total).clamp(0.0, 1.0).toDouble()
+                  : null;
+          // Repaint at most ~10x per second.
+          final now = DateTime.now();
+          if (now.difference(_lastProgressNotify).inMilliseconds >= 100) {
+            _lastProgressNotify = now;
+            notifyListeners();
+          }
+        },
+      );
       _downloadedFile = downloaded;
+      // The server counted this download; keep "downloads left" accurate.
+      _foundFile = sharedFile.copyWith(downloadCount: sharedFile.downloadCount + 1);
       return downloaded;
     } on ShareApiException catch (error) {
       _error = error.message;
+      if (error.message.contains('download limit')) {
+        _foundFile = sharedFile.copyWith(downloadCount: sharedFile.maxDownloads);
+      }
       return null;
     } finally {
       _isDownloading = false;
+      _downloadProgress = null;
       notifyListeners();
     }
   }
