@@ -39,7 +39,7 @@ class DevicesScreen extends StatelessWidget {
 
                   // Devices List
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.lg, AppSpacing.xl, AppSpacing.xxl),
                     sliver: _buildDevicesList(context, deviceProvider),
                   ),
                 ],
@@ -53,7 +53,7 @@ class DevicesScreen extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.none),
       child: Row(
         children: [
           Expanded(
@@ -64,11 +64,11 @@ class DevicesScreen extends StatelessWidget {
                   'Devices',
                   style: AppTextStyles.heading2.copyWith(
                     color: context.palette.textPrimary,
-                    fontSize: 28,
+                    fontSize: AppFontSize.display,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Find nearby devices for direct sharing.',
                   style: AppTextStyles.body2.copyWith(
@@ -88,7 +88,7 @@ class DevicesScreen extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: AppSpacing.md),
           _CircleAction(
             icon: Icons.refresh,
             onTap: () => context.read<DeviceProvider>().refreshDevices(),
@@ -101,19 +101,19 @@ class DevicesScreen extends StatelessWidget {
   Widget _buildNetworkInfo(
       BuildContext context, DeviceProvider deviceProvider) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: context.isDark ? context.palette.accentSoft : null,
         gradient: context.isDark
             ? null
             : LinearGradient(
                 colors: [
-                  AppColors.primary.withValues(alpha: 0.1),
-                  AppColors.secondary.withValues(alpha: 0.1),
+                  AppColors.primary.withValues(alpha: AppOpacity.subtle),
+                  AppColors.secondary.withValues(alpha: AppOpacity.subtle),
                 ],
               ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,9 +123,9 @@ class DevicesScreen extends StatelessWidget {
               const Icon(
                 Icons.wifi,
                 color: AppColors.primary,
-                size: 24,
+                size: AppIconSize.xl,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 'Network Status',
                 style: AppTextStyles.heading3.copyWith(
@@ -134,7 +134,7 @@ class DevicesScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Row(
             children: [
               Expanded(
@@ -163,7 +163,7 @@ class DevicesScreen extends StatelessWidget {
   Widget _buildDeviceCategories(
       BuildContext context, DeviceProvider deviceProvider) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -173,7 +173,7 @@ class DevicesScreen extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Row(
             children: [
               Expanded(
@@ -185,7 +185,7 @@ class DevicesScreen extends StatelessWidget {
                   color: AppColors.primary,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: _DeviceTypeCard(
                   icon: '💻',
@@ -196,7 +196,7 @@ class DevicesScreen extends StatelessWidget {
                   color: AppColors.secondary,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: _DeviceTypeCard(
                   icon: '🌐',
@@ -218,11 +218,11 @@ class DevicesScreen extends StatelessWidget {
       return const SliverToBoxAdapter(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.all(32),
+            padding: EdgeInsets.all(AppSpacing.xxxl),
             child: Column(
               children: [
                 CircularProgressIndicator(),
-                SizedBox(height: 16),
+                SizedBox(height: AppSpacing.lg),
                 Text('Scanning for devices...'),
               ],
             ),
@@ -242,7 +242,7 @@ class DevicesScreen extends StatelessWidget {
         (context, index) {
           final device = deviceProvider.onlineDevices[index];
           return Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
             child: DeviceCard(
               device: device,
               onTap: () => _showDeviceOptions(context, device),
@@ -256,17 +256,17 @@ class DevicesScreen extends StatelessWidget {
 
   Widget _buildDiscoveryError(BuildContext context, String message) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.lg, AppSpacing.xl, AppSpacing.none),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
+        color: AppColors.error.withValues(alpha: AppOpacity.faint),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.error.withValues(alpha: AppOpacity.quarter)),
       ),
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: AppColors.error),
-          const SizedBox(width: 10),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
               message,
@@ -282,23 +282,23 @@ class DevicesScreen extends StatelessWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(AppSpacing.xxxl),
       child: Column(
         children: [
           Icon(
             Icons.devices_other,
-            size: 64,
+            size: AppIconSize.hero,
             color:
                 context.palette.textMuted,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             'No devices found',
             style: AppTextStyles.heading3.copyWith(
               color: context.palette.textSecondary,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'Pull to refresh or make sure other devices are running SwiftShare',
             style: AppTextStyles.body2.copyWith(
@@ -306,7 +306,7 @@ class DevicesScreen extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
           ElevatedButton.icon(
             onPressed: () {
               context.read<DeviceProvider>().refreshDevices();
@@ -323,7 +323,7 @@ class DevicesScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -444,10 +444,10 @@ class _NetworkInfoItem extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 16,
+              size: AppIconSize.sm,
               color: context.palette.textSecondary,
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: AppSpacing.xs),
             Text(
               title,
               style: AppTextStyles.caption.copyWith(
@@ -456,7 +456,7 @@ class _NetworkInfoItem extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           value,
           style: AppTextStyles.body1.copyWith(
@@ -485,21 +485,21 @@ class _DeviceTypeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: color.withValues(alpha: AppOpacity.subtle),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: color.withValues(alpha: 0.2),
+          color: color.withValues(alpha: AppOpacity.medium),
         ),
       ),
       child: Column(
         children: [
           Text(
             icon,
-            style: const TextStyle(fontSize: 24),
+            style: const TextStyle(fontSize: AppFontSize.xxl),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             title,
             style: AppTextStyles.caption.copyWith(
@@ -507,7 +507,7 @@ class _DeviceTypeCard extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             count.toString(),
             style: AppTextStyles.heading3.copyWith(
@@ -543,10 +543,10 @@ class _CircleActionState extends State<_CircleAction> {
       onTap: widget.onTap,
       child: AnimatedScale(
         scale: _pressed ? 0.92 : 1,
-        duration: const Duration(milliseconds: 120),
+        duration: AppDurations.instant,
         child: Container(
-          width: 40,
-          height: 40,
+          width: AppSizes.iconTile,
+          height: AppSizes.iconTile,
           decoration: BoxDecoration(
             color: context.palette.surface,
             shape: BoxShape.circle,
@@ -559,7 +559,7 @@ class _CircleActionState extends State<_CircleAction> {
               ),
             ],
           ),
-          child: Icon(widget.icon, color: context.palette.textBody, size: 19),
+          child: Icon(widget.icon, color: context.palette.textBody, size: AppIconSize.lg),
         ),
       ),
     );

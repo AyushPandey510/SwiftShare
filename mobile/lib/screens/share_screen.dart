@@ -22,7 +22,7 @@ class ShareScreen extends StatefulWidget {
 
 // One duration and curve for the whole File/Text switch, so the tab pill,
 // the panel fade and the height change move together.
-const Duration _modeSwitchDuration = Duration(milliseconds: 240);
+const Duration _modeSwitchDuration = AppDurations.medium;
 const Curve _modeSwitchCurve = Curves.easeOutCubic;
 
 class _ShareScreenState extends State<ShareScreen> {
@@ -55,20 +55,20 @@ class _ShareScreenState extends State<ShareScreen> {
         child: Consumer<ShareProvider>(
           builder: (context, shareProvider, child) {
             return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.xxl),
               children: [
                 _buildHeader(context),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xxl),
                 Text(
                   'Share files online',
                   style: AppTextStyles.heading2.copyWith(
                     color: context.palette.textPrimary,
-                    fontSize: 28,
+                    fontSize: AppFontSize.display,
                     height: 1.05,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Upload from your phone and open it on web with a temporary code, link, or QR.',
                   style: AppTextStyles.body2.copyWith(
@@ -77,9 +77,9 @@ class _ShareScreenState extends State<ShareScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: AppSpacing.xl),
                 _buildModeSelector(),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 AnimatedSize(
                   duration: _modeSwitchDuration,
                   curve: _modeSwitchCurve,
@@ -87,7 +87,7 @@ class _ShareScreenState extends State<ShareScreen> {
                   clipBehavior: Clip.none, // keep the panel shadow visible
                   child: AnimatedSwitcher(
                     duration: _modeSwitchDuration,
-                    reverseDuration: const Duration(milliseconds: 140),
+                    reverseDuration: AppDurations.fast,
                     switchInCurve: _modeSwitchCurve,
                     switchOutCurve: Curves.easeInCubic,
                     // The outgoing panel is overlaid (positioned), so only the
@@ -122,17 +122,17 @@ class _ShareScreenState extends State<ShareScreen> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 _buildDownloadLimit(),
                 if (shareProvider.error != null) ...[
-                  const SizedBox(height: 14),
+                  const SizedBox(height: AppSpacing.lg),
                   _buildError(shareProvider.error!),
                 ],
                 if (shareProvider.uploadedFile != null) ...[
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.xl),
                   _SharedFileResult(file: shareProvider.uploadedFile!),
                 ],
-                const SizedBox(height: 10),
+                const SizedBox(height: AppSpacing.md),
                 _buildAccessButton(context),
               ],
             );
@@ -158,23 +158,23 @@ class _ShareScreenState extends State<ShareScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.28),
+                color: AppColors.primary.withValues(alpha: AppOpacity.quarter),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
             ],
           ),
-          child: const Icon(Icons.share_rounded, color: Colors.white, size: 19),
+          child: const Icon(Icons.share_rounded, color: Colors.white, size: AppIconSize.lg),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: AppSpacing.md),
         Text(
           'SwiftShare',
           style: AppTextStyles.body1.copyWith(
             color: context.palette.textPrimary,
-            fontSize: 18,
+            fontSize: AppFontSize.lg,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -189,7 +189,7 @@ class _ShareScreenState extends State<ShareScreen> {
             );
           },
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: AppSpacing.md),
         _CircleAction(
           tooltip: 'Access file',
           icon: Icons.file_download_outlined,
@@ -206,11 +206,11 @@ class _ShareScreenState extends State<ShareScreen> {
 
   Widget _buildModeSelector() {
     return Container(
-      height: 44,
-      padding: const EdgeInsets.all(4),
+      height: AppSizes.iconButton,
+      padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
         color: context.palette.surfaceMuted,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: context.palette.border),
       ),
       child: Stack(
@@ -229,10 +229,10 @@ class _ShareScreenState extends State<ShareScreen> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: context.palette.surface,
-                    borderRadius: BorderRadius.circular(11),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
+                        color: Colors.black.withValues(alpha: AppOpacity.faint),
                         blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
@@ -277,7 +277,7 @@ class _ShareScreenState extends State<ShareScreen> {
     required VoidCallback onPressed,
   }) {
     return SizedBox(
-      height: 48,
+      height: AppSizes.buttonHeight,
       child: ElevatedButton.icon(
         icon: busy
             ? const SizedBox(
@@ -286,20 +286,20 @@ class _ShareScreenState extends State<ShareScreen> {
                 child: CircularProgressIndicator(
                     strokeWidth: 2, color: Colors.white),
               )
-            : Icon(icon, size: 20),
+            : Icon(icon, size: AppIconSize.lg),
         label: Text(busy ? busyLabel : label),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.7),
+          disabledBackgroundColor: AppColors.primary.withValues(alpha: AppOpacity.overlay),
           disabledForegroundColor: Colors.white,
           elevation: 8,
-          shadowColor: AppColors.primary.withValues(alpha: 0.32),
+          shadowColor: AppColors.primary.withValues(alpha: AppOpacity.strong),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
           textStyle: const TextStyle(
-            fontSize: 14,
+            fontSize: AppFontSize.sm,
             fontWeight: FontWeight.w700,
             fontFamily: 'Poppins',
           ),
@@ -311,14 +311,14 @@ class _ShareScreenState extends State<ShareScreen> {
 
   Widget _buildFileUpload(ShareProvider shareProvider) {
     return _Panel(
-      padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
             child: Container(
-              width: 72,
-              height: 72,
+              width: AppSizes.iconTileXl,
+              height: AppSizes.iconTileXl,
               decoration: BoxDecoration(
                 color: context.isDark ? context.palette.accentSoft : null,
                 gradient: context.isDark
@@ -331,30 +331,30 @@ class _ShareScreenState extends State<ShareScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.12),
+                    color: AppColors.primary.withValues(alpha: AppOpacity.subtle),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: const Icon(Icons.cloud_upload_outlined,
-                  size: 40, color: AppColors.primary),
+                  size: AppIconSize.xxl, color: AppColors.primary),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.xl),
           Text(
             'Choose a file from this phone',
             textAlign: TextAlign.center,
             style: AppTextStyles.heading3.copyWith(
               color: context.palette.textPrimary,
-              fontSize: 18,
+              fontSize: AppFontSize.lg,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'Up to ${AppConfig.formatFileSize(AppConfig.maxFileSize)}. The backend creates a code, QR, and download link.',
             textAlign: TextAlign.center,
@@ -364,7 +364,7 @@ class _ShareScreenState extends State<ShareScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
           _primaryButton(
             busy: shareProvider.isUploading,
             icon: Icons.description,
@@ -389,7 +389,7 @@ class _ShareScreenState extends State<ShareScreen> {
               prefixIcon: Icon(Icons.description),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           TextField(
             controller: _textController,
             minLines: 6,
@@ -399,7 +399,7 @@ class _ShareScreenState extends State<ShareScreen> {
               alignLabelWithHint: true,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           _primaryButton(
             busy: shareProvider.isUploading,
             icon: Icons.link,
@@ -418,7 +418,7 @@ class _ShareScreenState extends State<ShareScreen> {
 
   Widget _buildDownloadLimit() {
     return _Panel(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       child: Column(
         children: [
           Row(
@@ -427,13 +427,13 @@ class _ShareScreenState extends State<ShareScreen> {
                 width: 22,
                 height: 22,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.primary.withValues(alpha: AppOpacity.faint),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child:
-                    const Icon(Icons.check, color: AppColors.primary, size: 16),
+                    const Icon(Icons.check, color: AppColors.primary, size: AppIconSize.sm),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
                   'Max downloads',
@@ -445,17 +445,17 @@ class _ShareScreenState extends State<ShareScreen> {
               ),
               Container(
                 height: 34,
-                padding: const EdgeInsets.only(left: 12, right: 6),
+                padding: const EdgeInsets.only(left: AppSpacing.md, right: AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: context.palette.surfaceSubtle,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(color: context.palette.border),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
                     value: _maxDownloads,
-                    borderRadius: BorderRadius.circular(12),
-                    icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    icon: const Icon(Icons.keyboard_arrow_down, size: AppIconSize.lg),
                     items: List.generate(10, (index) => index + 1)
                         .map((value) => DropdownMenuItem(
                             value: value, child: Text(value.toString())))
@@ -471,11 +471,11 @@ class _ShareScreenState extends State<ShareScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.lg),
           Row(
             children: [
-              Icon(Icons.schedule, color: context.palette.textMuted, size: 16),
-              const SizedBox(width: 10),
+              Icon(Icons.schedule, color: context.palette.textMuted, size: AppIconSize.sm),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
                   'Auto expiration',
@@ -487,10 +487,10 @@ class _ShareScreenState extends State<ShareScreen> {
               ),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: context.palette.surfaceSubtle,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Text(
                   '24 hours',
@@ -511,17 +511,17 @@ class _ShareScreenState extends State<ShareScreen> {
     return SizedBox(
       height: 46,
       child: OutlinedButton.icon(
-        icon: const Icon(Icons.file_download_outlined, size: 20),
+        icon: const Icon(Icons.file_download_outlined, size: AppIconSize.lg),
         label: const Text('Access a shared file'),
         style: OutlinedButton.styleFrom(
           foregroundColor: context.palette.textBody,
           backgroundColor: context.palette.surface,
           side: BorderSide(color: context.palette.borderStrong),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
           textStyle: const TextStyle(
-            fontSize: 14,
+            fontSize: AppFontSize.sm,
             fontWeight: FontWeight.w700,
             fontFamily: 'Poppins',
           ),
@@ -538,16 +538,16 @@ class _ShareScreenState extends State<ShareScreen> {
 
   Widget _buildError(String message) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
+        color: AppColors.error.withValues(alpha: AppOpacity.faint),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.error.withValues(alpha: AppOpacity.quarter)),
       ),
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: AppColors.error),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(message)),
         ],
       ),
@@ -582,14 +582,14 @@ class _CircleAction extends StatelessWidget {
         onTap: onPressed,
         customBorder: const CircleBorder(),
         child: Container(
-          width: 44,
-          height: 44,
+          width: AppSizes.iconButton,
+          height: AppSizes.iconButton,
           decoration: BoxDecoration(
             color: context.palette.surface,
             shape: BoxShape.circle,
             border: Border.all(color: context.palette.border),
           ),
-          child: Icon(icon, color: context.palette.textBody, size: 20),
+          child: Icon(icon, color: context.palette.textBody, size: AppIconSize.lg),
         ),
       ),
     );
@@ -629,8 +629,8 @@ class _ModeTab extends StatelessWidget {
           builder: (context, animatedColor, _) => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: animatedColor),
-              const SizedBox(width: 7),
+              Icon(icon, size: AppIconSize.sm, color: animatedColor),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 label,
                 style: AppTextStyles.body2.copyWith(
@@ -660,7 +660,7 @@ class _SharedFileResult extends StatelessWidget {
           Row(
             children: [
               const Icon(Icons.check_circle, color: AppColors.success),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   'Ready to share',
@@ -670,7 +670,7 @@ class _SharedFileResult extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Center(
             child: QrImageView(
               data: file.url,
@@ -679,20 +679,20 @@ class _SharedFileResult extends StatelessWidget {
               backgroundColor: Colors.white,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           _InfoRow(label: 'File', value: file.filename),
           _InfoRow(label: 'Size', value: AppConfig.formatFileSize(file.size)),
           _InfoRow(label: 'Code', value: file.code),
           _InfoRow(label: 'Downloads', value: '${file.downloadsLeft} left'),
           _InfoRow(
               label: 'Expires', value: file.expiresAt.toLocal().toString()),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           SelectableText(
             file.url,
             textAlign: TextAlign.center,
             style: AppTextStyles.caption.copyWith(color: AppColors.primary),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -732,7 +732,7 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -763,7 +763,7 @@ class _Panel extends StatelessWidget {
 
   const _Panel({
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(AppSpacing.lg),
   });
 
   @override
@@ -772,7 +772,7 @@ class _Panel extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: context.palette.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: context.palette.border),
         boxShadow: [
           BoxShadow(

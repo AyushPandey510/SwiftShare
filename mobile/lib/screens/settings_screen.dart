@@ -22,17 +22,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: context.palette.background,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.xxl),
           children: [
             Text(
               'Settings',
               style: AppTextStyles.heading2.copyWith(
                 color: context.palette.textPrimary,
-                fontSize: 28,
+                fontSize: AppFontSize.display,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               'Manage preferences for sharing and your device.',
               style: AppTextStyles.body2.copyWith(
@@ -40,17 +40,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             _buildDeviceSection(context),
             if (kDebugMode) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               _buildNetworkSection(context),
             ],
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
             _buildTransferSection(context),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
             _buildAppSection(context),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
             _buildAboutSection(context),
           ],
         ),
@@ -66,11 +66,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: context.palette.surface,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             side: BorderSide(color: context.palette.border),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 _SettingsItem(
                   icon: Icons.device_hub,
                   title: 'Device Name',
@@ -127,11 +127,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       color: context.palette.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         side: BorderSide(color: context.palette.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -141,7 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             FutureBuilder<Map<String, dynamic>>(
               future: NetworkUtils.getBackendStatus(),
               builder: (context, snapshot) {
@@ -158,17 +158,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onTap: () => _showBackendConfigDialog(context),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                         decoration: BoxDecoration(
                           color: isConnected
-                              ? Colors.green.withValues(alpha: 0.1)
-                              : Colors.red.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                              ? Colors.green.withValues(alpha: AppOpacity.subtle)
+                              : Colors.red.withValues(alpha: AppOpacity.subtle),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                         child: Text(
                           isConnected ? 'Connected' : 'Disconnected',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: AppFontSize.xs,
                             color: isConnected ? Colors.green : Colors.red,
                             fontWeight: FontWeight.w700,
                           ),
@@ -227,11 +227,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: context.palette.surface,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             side: BorderSide(color: context.palette.border),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -241,7 +241,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 _SettingsItem(
                   icon: Icons.folder,
                   title: 'Download Directory',
@@ -292,11 +292,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: context.palette.surface,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             side: BorderSide(color: context.palette.border),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -306,14 +306,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 _SettingsItem(
                   icon: Icons.dark_mode,
                   title: 'Theme',
                   subtitle: 'Follow your phone, or pick light or dark',
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: SizedBox(
                     width: double.infinity,
                     child: SegmentedButton<ThemeMode>(
@@ -321,17 +321,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       segments: const [
                         ButtonSegment(
                           value: ThemeMode.system,
-                          icon: Icon(Icons.brightness_auto, size: 18),
+                          icon: Icon(Icons.brightness_auto, size: AppIconSize.md),
                           label: Text('System'),
                         ),
                         ButtonSegment(
                           value: ThemeMode.light,
-                          icon: Icon(Icons.light_mode, size: 18),
+                          icon: Icon(Icons.light_mode, size: AppIconSize.md),
                           label: Text('Light'),
                         ),
                         ButtonSegment(
                           value: ThemeMode.dark,
-                          icon: Icon(Icons.dark_mode, size: 18),
+                          icon: Icon(Icons.dark_mode, size: AppIconSize.md),
                           label: Text('Dark'),
                         ),
                       ],
@@ -377,11 +377,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       color: context.palette.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         side: BorderSide(color: context.palette.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -391,7 +391,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             const _SettingsItem(
               icon: Icons.info,
               title: 'Version',
@@ -473,14 +473,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           height: 200,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: const Center(
             child: Text(
               'QR Code\nPlaceholder',
               textAlign: TextAlign.center,
               // Dark text: this box stays white in both themes (QR area).
-              style: TextStyle(fontSize: 16, color: Color(0xFF0F172A)),
+              style: TextStyle(fontSize: AppFontSize.md, color: AppColors.ink),
             ),
           ),
         ),
@@ -632,7 +632,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('Enter the backend server URL:'),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             TextField(
               controller: controller,
               decoration: const InputDecoration(
@@ -677,7 +677,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
-            SizedBox(height: 16),
+            SizedBox(height: AppSpacing.lg),
             Text('Scanning network for backend server...'),
           ],
         ),
@@ -740,7 +740,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
-            SizedBox(height: 16),
+            SizedBox(height: AppSpacing.lg),
             Text('Testing connection to backend...'),
           ],
         ),
@@ -789,7 +789,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
-            SizedBox(height: 16),
+            SizedBox(height: AppSpacing.lg),
             Text('Gathering network information...'),
           ],
         ),
@@ -848,7 +848,7 @@ class _NetworkInfoItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -887,16 +887,16 @@ class _SettingsItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Container(
-        width: 40,
-        height: 40,
+        width: AppSizes.iconTile,
+        height: AppSizes.iconTile,
         decoration: BoxDecoration(
           color: context.palette.accentSoft,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Icon(
           icon,
           color: context.palette.accent,
-          size: 20,
+          size: AppIconSize.lg,
         ),
       ),
       title: Text(

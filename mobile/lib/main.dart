@@ -84,6 +84,7 @@ class SplashScreen extends StatefulWidget {
 // Splash logo. Size and position must match the native Android splash
 // (res/drawable-*/splash_logo.png and splash_icon.png): 140dp, screen centre.
 const String _splashLogoAsset = 'assets/images/splash_logo.png';
+const String _splashLogoDarkAsset = 'assets/images/splash_logo_dark.png';
 const double _logoSize = 140;
 // Shortest time the splash stays up, so the spinner never just flickers.
 const Duration _minSplashTime = Duration(milliseconds: 600);
@@ -99,7 +100,7 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: AppDurations.pulse,
       vsync: this,
     );
     _animationController.repeat(reverse: true);
@@ -114,7 +115,9 @@ class _SplashScreenState extends State<SplashScreen>
     _firstFrameReleased = true;
     // Decode the logo, then let Flutter paint. A 1 s cap makes sure a slow
     // or failed decode can never leave the user stuck on the native splash.
-    precacheImage(const AssetImage(_splashLogoAsset), context)
+    // Same light/dark choice as the native splash (which follows the phone).
+    final String logo = context.isDark ? _splashLogoDarkAsset : _splashLogoAsset;
+    precacheImage(AssetImage(logo), context)
         .timeout(const Duration(seconds: 1), onTimeout: () {})
         .whenComplete(WidgetsBinding.instance.allowFirstFrame);
   }
@@ -143,8 +146,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bool dark = context.isDark;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // Light or dark, matching the native Android splash for that mode.
+      backgroundColor: context.palette.background,
       // Logo is pinned to the exact screen centre, like the native splash,
       // so the handoff from Android's splash to Flutter doesn't move it.
       body: Stack(
@@ -169,16 +174,18 @@ class _SplashScreenState extends State<SplashScreen>
                     SizedBox(
                       width: _ringBox,
                       height: _ringBox,
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: _ringStroke,
                         strokeCap: StrokeCap.round,
-                        backgroundColor: Color(0xFFEEF2FF),
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        // Track = the logo's ring colour in each mode.
+                        backgroundColor:
+                            dark ? AppColors.brandInk : AppColors.ringTrack,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                            AppColors.primary),
                       ),
                     ),
                     Image.asset(
-                      _splashLogoAsset,
+                      dark ? _splashLogoDarkAsset : _splashLogoAsset,
                       width: _logoSize,
                       height: _logoSize,
                       semanticLabel: 'SwiftShare logo',
@@ -193,18 +200,20 @@ class _SplashScreenState extends State<SplashScreen>
               offset: const Offset(0, _logoSize / 2 + 44),
               child: Text.rich(
                 TextSpan(
-                  children: const [
+                  children: [
                     TextSpan(
                       text: 'Swift',
-                      style: TextStyle(color: Color(0xFF1E1B4B)),
+                      style: TextStyle(color: context.palette.wordmark),
                     ),
                     TextSpan(
                       text: 'Share',
-                      style: TextStyle(color: Color(0xFF4F46E5)),
+                      style: TextStyle(
+                        color: dark ? context.palette.accent : AppColors.brandIndigo,
+                      ),
                     ),
                   ],
                   style: AppTextStyles.heading2.copyWith(
-                    fontSize: 30,
+                    fontSize: AppFontSize.hero,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -289,7 +298,7 @@ class _SwiftShareBottomBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
           color: context.palette.navBar,
           child: Row(
             children: List.generate(_items.length, (index) {
@@ -339,19 +348,19 @@ class _BottomBarItemState extends State<_BottomBarItem> {
       onTap: widget.onTap,
       child: AnimatedScale(
         scale: _pressed ? 0.92 : 1,
-        duration: const Duration(milliseconds: 120),
+        duration: AppDurations.instant,
         curve: Curves.easeOut,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
+          duration: AppDurations.normal,
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(vertical: 7),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             color: widget.selected ? context.palette.surface : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
             boxShadow: widget.selected
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.08),
+                      color: AppColors.primary.withValues(alpha: AppOpacity.faint),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -363,15 +372,15 @@ class _BottomBarItemState extends State<_BottomBarItem> {
             children: [
               Icon(
                 widget.selected ? widget.spec.activeIcon : widget.spec.icon,
-                size: 22,
+                size: AppIconSize.xl,
                 color: color,
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: AppSpacing.xs),
               AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 180),
+                duration: AppDurations.normal,
                 style: AppTextStyles.caption.copyWith(
                   color: color,
-                  fontSize: 11,
+                  fontSize: AppFontSize.xxs,
                   fontWeight:
                       widget.selected ? FontWeight.w800 : FontWeight.w600,
                 ),

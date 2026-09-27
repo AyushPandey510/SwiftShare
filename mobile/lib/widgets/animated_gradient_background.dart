@@ -15,10 +15,10 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
   late AnimationController _controller;
   late Animation<double> _animation;
   final List<List<Color>> _gradients = [
-    [const Color(0xFF6366F1), const Color(0xFF8B5CF6), const Color(0xFF06B6D4)], // Indigo, Purple, Cyan
-    [const Color(0xFFF59E0B), const Color(0xFFEF4444), const Color(0xFF6366F1)], // Amber, Red, Indigo
-    [const Color(0xFF10B981), const Color(0xFF06B6D4), const Color(0xFF8B5CF6)], // Green, Cyan, Purple
-    [const Color(0xFFF472B6), const Color(0xFF6366F1), const Color(0xFF06B6D4)], // Pink, Indigo, Cyan
+    [AppColors.primary, AppColors.secondary, AppColors.accent], // Indigo, Purple, Cyan
+    [AppColors.warning, AppColors.error, AppColors.primary], // Amber, Red, Indigo
+    [AppColors.success, AppColors.accent, AppColors.secondary], // Green, Cyan, Purple
+    [AppColors.pink, AppColors.primary, AppColors.accent], // Pink, Indigo, Cyan
   ];
   int _currentGradient = 0;
   int _nextGradient = 1;
@@ -28,7 +28,7 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 6),
+      duration: AppDurations.ambient,
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           setState(() {
@@ -82,8 +82,8 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
                         ),
                         radius: 0.8,
                         colors: [
-                          Colors.white.withValues(alpha: 0.12),
-                          Colors.black.withValues(alpha: 0.08),
+                          Colors.white.withValues(alpha: AppOpacity.subtle),
+                          Colors.black.withValues(alpha: AppOpacity.faint),
                         ],
                         stops: const [0.0, 1.0],
                       ),

@@ -21,10 +21,10 @@ class QuickActionsWidget extends StatelessWidget {
             ),
             const Spacer(),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.primary.withValues(alpha: AppOpacity.subtle),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Text(
                 '4 Actions',
@@ -36,7 +36,7 @@ class QuickActionsWidget extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: AppSpacing.xl),
         Row(
           children: [
             Expanded(
@@ -48,7 +48,7 @@ class QuickActionsWidget extends StatelessWidget {
                 onTap: () => _showFilePicker(context),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.lg),
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.folder_open,
@@ -60,7 +60,7 @@ class QuickActionsWidget extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
         Row(
           children: [
             Expanded(
@@ -72,7 +72,7 @@ class QuickActionsWidget extends StatelessWidget {
                 onTap: () => _showQRScanner(context),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.lg),
             Expanded(
               child: _QuickActionCard(
                 icon: Icons.history,
@@ -146,7 +146,7 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 150),
+      duration: AppDurations.fast,
       vsync: this,
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
@@ -172,16 +172,16 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
           scale: _scaleAnimation.value,
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
+                  color: Colors.black.withValues(alpha: AppOpacity.faint),
                   blurRadius: _shadowAnimation.value,
                   offset: const Offset(0, 3),
                   spreadRadius: 0,
                 ),
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withValues(alpha: AppOpacity.hairline),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                   spreadRadius: 0,
@@ -195,14 +195,14 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
                 onTapDown: (_) => _controller.forward(),
                 onTapUp: (_) => _controller.reverse(),
                 onTapCancel: () => _controller.reverse(),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.08),
+                      color: Theme.of(context).colorScheme.outline.withValues(alpha: AppOpacity.faint),
                       width: 1,
                     ),
                   ),
@@ -211,12 +211,12 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
                     children: [
                       // Enhanced Icon Container
                       Container(
-                        width: 48,
-                        height: 48,
+                        width: AppSizes.buttonHeight,
+                        height: AppSizes.buttonHeight,
                         decoration: BoxDecoration(
                           color: context.isDark
                               ? Color.alphaBlend(
-                                  widget.color.withValues(alpha: 0.18),
+                                  widget.color.withValues(alpha: AppOpacity.medium),
                                   context.palette.surface,
                                 )
                               : null,
@@ -226,32 +226,32 @@ class _QuickActionCardState extends State<_QuickActionCard> with SingleTickerPro
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    widget.color.withValues(alpha: 0.15),
-                                    widget.color.withValues(alpha: 0.08),
+                                    widget.color.withValues(alpha: AppOpacity.soft),
+                                    widget.color.withValues(alpha: AppOpacity.faint),
                                   ],
                                 ),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
                           border: Border.all(
-                            color: widget.color.withValues(alpha: 0.2),
+                            color: widget.color.withValues(alpha: AppOpacity.medium),
                             width: 1,
                           ),
                         ),
                         child: Icon(
                           widget.icon,
                           color: widget.color,
-                          size: 24,
+                          size: AppIconSize.xl,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.lg),
                       Text(
                         widget.title,
                         style: AppTextStyles.body1.copyWith(
                           fontWeight: FontWeight.w700,
                           color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 16,
+                          fontSize: AppFontSize.md,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         widget.subtitle,
                         style: AppTextStyles.caption.copyWith(

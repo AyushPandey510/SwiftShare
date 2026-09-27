@@ -17,28 +17,28 @@ class TransferSummaryWidget extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
+                color: Colors.black.withValues(alpha: AppOpacity.faint),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
                 spreadRadius: 0,
               ),
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: Colors.black.withValues(alpha: AppOpacity.hairline),
                 blurRadius: 15,
                 offset: const Offset(0, 6),
                 spreadRadius: 0,
               ),
             ],
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.08),
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: AppOpacity.faint),
               width: 1,
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -55,14 +55,14 @@ class TransferSummaryWidget extends StatelessWidget {
                     if (activeTransfers.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.primary.withValues(alpha: AppOpacity.soft),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
                           border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.3),
+                            color: AppColors.primary.withValues(alpha: AppOpacity.strong),
                             width: 1,
                           ),
                         ),
@@ -71,13 +71,13 @@ class TransferSummaryWidget extends StatelessWidget {
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,
-                            fontSize: 11,
+                            fontSize: AppFontSize.xxs,
                           ),
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
                 Row(
                   children: [
                     Expanded(
@@ -88,7 +88,7 @@ class TransferSummaryWidget extends StatelessWidget {
                         color: AppColors.success,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: _SummaryItem(
                         icon: Icons.sync,
@@ -97,7 +97,7 @@ class TransferSummaryWidget extends StatelessWidget {
                         color: AppColors.primary,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: _SummaryItem(
                         icon: Icons.error,
@@ -109,7 +109,7 @@ class TransferSummaryWidget extends StatelessWidget {
                   ],
                 ),
                 if (activeTransfers.isNotEmpty) ...[
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.xl),
                   Container(
                     height: 1,
                     decoration: BoxDecoration(
@@ -122,22 +122,22 @@ class TransferSummaryWidget extends StatelessWidget {
                                 Theme.of(context)
                                     .colorScheme
                                     .outline
-                                    .withValues(alpha: 0.2),
+                                    .withValues(alpha: AppOpacity.medium),
                                 Colors.transparent,
                               ],
                             ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.xl),
                   Text(
                     'Active Transfers',
                     style: AppTextStyles.body1.copyWith(
                       fontWeight: FontWeight.w700,
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 16,
+                      fontSize: AppFontSize.md,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   ...activeTransfers.map((transfer) => _ActiveTransferItem(
                     transfer: transfer,
                     transferProvider: transferProvider,
@@ -168,31 +168,31 @@ class _SummaryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
+        color: color.withValues(alpha: AppOpacity.faint),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: color.withValues(alpha: 0.2),
+          color: color.withValues(alpha: AppOpacity.medium),
           width: 1,
         ),
       ),
       child: Column(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: AppSizes.iconTile,
+            height: AppSizes.iconTile,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              color: color.withValues(alpha: AppOpacity.soft),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(
               icon,
               color: color,
-              size: 20,
+              size: AppIconSize.lg,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Text(
             value,
             style: AppTextStyles.heading3.copyWith(
@@ -200,7 +200,7 @@ class _SummaryItem extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             title,
             style: AppTextStyles.caption.copyWith(
@@ -226,13 +226,13 @@ class _ActiveTransferItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: AppOpacity.subtle),
           width: 1,
         ),
       ),
@@ -252,10 +252,10 @@ class _ActiveTransferItem extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.primary.withValues(alpha: AppOpacity.soft),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Text(
                   '${(transfer.progress * 100).toInt()}%',
@@ -267,21 +267,21 @@ class _ActiveTransferItem extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           LinearProgressIndicator(
             value: transfer.progress,
-            backgroundColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+            backgroundColor: Theme.of(context).colorScheme.outline.withValues(alpha: AppOpacity.medium),
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               Icon(
                 Icons.access_time,
-                size: 14,
+                size: AppIconSize.xs,
                 color: context.palette.textSecondary,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: AppSpacing.xs),
               Text(
                 transferProvider.formatTransferTime(transfer.startTime),
                 style: AppTextStyles.caption.copyWith(

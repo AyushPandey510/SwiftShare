@@ -12,13 +12,13 @@ class DeviceSkeleton extends StatelessWidget {
       baseColor: context.palette.surfaceMuted,
       highlightColor: context.palette.surface,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: AppOpacity.subtle),
             width: 1,
           ),
         ),
@@ -26,15 +26,15 @@ class DeviceSkeleton extends StatelessWidget {
           children: [
             // Device Icon Skeleton
             Container(
-              width: 56,
-              height: 56,
+              width: AppSizes.iconTileLg,
+              height: AppSizes.iconTileLg,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
             ),
             
-            const SizedBox(width: 20),
+            const SizedBox(width: AppSpacing.xl),
             
             // Device Info Skeleton
             Expanded(
@@ -48,31 +48,31 @@ class DeviceSkeleton extends StatelessWidget {
                           height: 20,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(AppRadius.xs),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSpacing.md),
                       Container(
                         width: 60,
                         height: 24,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Container(
                     width: 120,
                     height: 16,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppRadius.xs),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   Row(
                     children: [
                       Container(
@@ -80,16 +80,16 @@ class DeviceSkeleton extends StatelessWidget {
                         height: 14,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(AppRadius.xs),
                         ),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: AppSpacing.xl),
                       Container(
                         width: 60,
                         height: 14,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(AppRadius.xs),
                         ),
                       ),
                     ],
@@ -104,7 +104,7 @@ class DeviceSkeleton extends StatelessWidget {
               height: 34,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
               ),
             ),
           ],

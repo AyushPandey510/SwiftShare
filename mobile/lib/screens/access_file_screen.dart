@@ -46,20 +46,20 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
           builder: (context, shareProvider, child) {
             final file = shareProvider.foundFile;
             return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.xxl),
               children: [
                 _buildHeader(context),
-                const SizedBox(height: 26),
+                const SizedBox(height: AppSpacing.xxl),
                 Text(
                   'Access a shared file',
                   style: AppTextStyles.heading2.copyWith(
                     color: context.palette.textPrimary,
-                    fontSize: 28,
+                    fontSize: AppFontSize.display,
                     height: 1.05,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Enter the six-character code from web, another phone, or a QR scan.',
                   style: AppTextStyles.body2.copyWith(
@@ -68,14 +68,14 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: AppSpacing.xl),
                 _buildLookupCard(shareProvider),
                 if (shareProvider.error != null) ...[
-                  const SizedBox(height: 14),
+                  const SizedBox(height: AppSpacing.lg),
                   _ErrorBox(message: shareProvider.error!),
                 ],
                 if (file != null) ...[
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.xl),
                   _SharedFileAccessCard(
                     file: file,
                     isDownloading: shareProvider.isDownloading,
@@ -102,8 +102,8 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
         ),
         const Spacer(),
         Container(
-          width: 44,
-          height: 44,
+          width: AppSizes.iconButton,
+          height: AppSizes.iconButton,
           decoration: BoxDecoration(
             // Dark mode: solid brand colour instead of the gradient.
             color: context.isDark ? AppColors.primary : null,
@@ -114,17 +114,17 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.24),
+                color: AppColors.primary.withValues(alpha: AppOpacity.quarter),
                 blurRadius: 14,
                 offset: const Offset(0, 7),
               ),
             ],
           ),
           child: const Icon(Icons.file_download_outlined,
-              color: Colors.white, size: 24),
+              color: Colors.white, size: AppIconSize.xl),
         ),
       ],
     );
@@ -132,7 +132,7 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
 
   Widget _buildLookupCard(ShareProvider shareProvider) {
     return _Panel(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -152,13 +152,13 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: const Icon(Icons.file_download_outlined,
-                  color: AppColors.primary, size: 38),
+                  color: AppColors.primary, size: AppIconSize.xxl),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.xl),
           TextField(
             controller: _codeController,
             maxLength: 6,
@@ -176,15 +176,15 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
               filled: true,
               fillColor: context.palette.surfaceSubtle,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 borderSide: BorderSide(color: context.palette.border),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 borderSide: BorderSide(color: context.palette.border),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 borderSide:
                     const BorderSide(color: AppColors.primary, width: 1.6),
               ),
@@ -200,9 +200,9 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
             },
             onSubmitted: (_) => _lookup(shareProvider),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.lg),
           SizedBox(
-            height: 50,
+            height: AppSizes.buttonHeight,
             child: ElevatedButton.icon(
               onPressed: shareProvider.isLookingUp
                   ? null
@@ -216,7 +216,7 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.search, size: 20),
+                  : const Icon(Icons.search, size: AppIconSize.lg),
               label: Text(shareProvider.isLookingUp
                   ? 'Finding file...'
                   : 'Find shared file'),
@@ -224,12 +224,12 @@ class _AccessFileScreenState extends State<AccessFileScreen> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 elevation: 10,
-                shadowColor: AppColors.primary.withValues(alpha: 0.35),
+                shadowColor: AppColors.primary.withValues(alpha: AppOpacity.strong),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 textStyle: const TextStyle(
-                  fontSize: 14,
+                  fontSize: AppFontSize.sm,
                   fontWeight: FontWeight.w800,
                   fontFamily: 'Poppins',
                 ),
@@ -287,16 +287,16 @@ class _SharedFileAccessCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: AppSizes.iconButton,
+                height: AppSizes.iconButton,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.09),
-                  borderRadius: BorderRadius.circular(14),
+                  color: AppColors.primary.withValues(alpha: AppOpacity.subtle),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: const Icon(Icons.insert_drive_file,
                     color: AppColors.primary),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
                   file.filename,
@@ -309,26 +309,26 @@ class _SharedFileAccessCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           _InfoRow(label: 'Size', value: AppConfig.formatFileSize(file.size)),
           _InfoRow(label: 'Code', value: file.code),
           _InfoRow(label: 'Downloads', value: '${file.downloadsLeft} left'),
           _InfoRow(
               label: 'Expires', value: file.expiresAt.toLocal().toString()),
           if (downloaded != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.success.withValues(alpha: AppOpacity.subtle),
+                borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.check_circle,
-                      color: AppColors.success, size: 18),
-                  const SizedBox(width: 8),
+                      color: AppColors.success, size: AppIconSize.md),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       downloaded!.isPublic
@@ -347,16 +347,16 @@ class _SharedFileAccessCard extends StatelessWidget {
             ),
           ],
           if (isDownloading) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSpacing.lg),
             ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               child: LinearProgressIndicator(
                 value: progress, // null = indeterminate
                 minHeight: 6,
                 backgroundColor: context.palette.surfaceMuted,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               progress != null
                   ? '${(progress! * 100).toStringAsFixed(0)}%  ·  '
@@ -371,9 +371,9 @@ class _SharedFileAccessCard extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.xl),
           SizedBox(
-            height: 50,
+            height: AppSizes.buttonHeight,
             child: ElevatedButton.icon(
               icon: isDownloading
                   ? const SizedBox(
@@ -386,7 +386,7 @@ class _SharedFileAccessCard extends StatelessWidget {
                     )
                   : Icon(
                       downloaded != null ? Icons.download_done : Icons.download,
-                      size: 20),
+                      size: AppIconSize.lg),
               label: Text(_buttonLabel),
               // Disabled while downloading or when no downloads are left, so a
               // second tap can't silently use up the last download.
@@ -396,9 +396,9 @@ class _SharedFileAccessCard extends StatelessWidget {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 elevation: 10,
-                shadowColor: AppColors.primary.withValues(alpha: 0.35),
+                shadowColor: AppColors.primary.withValues(alpha: AppOpacity.strong),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
               ),
             ),
@@ -418,7 +418,7 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -469,10 +469,10 @@ class _CircleButtonState extends State<_CircleButton> {
       onTap: widget.onTap,
       child: AnimatedScale(
         scale: _pressed ? 0.92 : 1,
-        duration: const Duration(milliseconds: 120),
+        duration: AppDurations.instant,
         child: Container(
-          width: 44,
-          height: 44,
+          width: AppSizes.iconButton,
+          height: AppSizes.iconButton,
           decoration: BoxDecoration(
             color: context.palette.surface,
             shape: BoxShape.circle,
@@ -485,7 +485,7 @@ class _CircleButtonState extends State<_CircleButton> {
               ),
             ],
           ),
-          child: Icon(widget.icon, color: context.palette.textBody, size: 20),
+          child: Icon(widget.icon, color: context.palette.textBody, size: AppIconSize.lg),
         ),
       ),
     );
@@ -500,16 +500,16 @@ class _ErrorBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
+        color: AppColors.error.withValues(alpha: AppOpacity.faint),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.error.withValues(alpha: AppOpacity.quarter)),
       ),
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: AppColors.error),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(message)),
         ],
       ),
@@ -523,7 +523,7 @@ class _Panel extends StatelessWidget {
 
   const _Panel({
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(AppSpacing.lg),
   });
 
   @override
@@ -532,7 +532,7 @@ class _Panel extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: context.palette.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: context.palette.border),
         boxShadow: [
           BoxShadow(

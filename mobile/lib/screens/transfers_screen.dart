@@ -36,7 +36,7 @@ class _TransfersScreenState extends State<TransfersScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.none),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -44,11 +44,11 @@ class _TransfersScreenState extends State<TransfersScreen>
                     'Transfers',
                     style: AppTextStyles.heading2.copyWith(
                       color: context.palette.textPrimary,
-                      fontSize: 28,
+                      fontSize: AppFontSize.display,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     'Track nearby sends and completed downloads.',
                     style: AppTextStyles.body2.copyWith(
@@ -56,13 +56,13 @@ class _TransfersScreenState extends State<TransfersScreen>
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.xl),
                   Container(
-                    height: 44,
-                    padding: const EdgeInsets.all(4),
+                    height: AppSizes.iconButton,
+                    padding: const EdgeInsets.all(AppSpacing.xs),
                     decoration: BoxDecoration(
                       color: context.palette.surfaceMuted,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
                       border: Border.all(color: context.palette.border),
                     ),
                     child: TabBar(
@@ -71,10 +71,10 @@ class _TransfersScreenState extends State<TransfersScreen>
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicator: BoxDecoration(
                         color: context.palette.surface,
-                        borderRadius: BorderRadius.circular(11),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
+                            color: Colors.black.withValues(alpha: AppOpacity.hairline),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
@@ -98,7 +98,7 @@ class _TransfersScreenState extends State<TransfersScreen>
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Expanded(
               child: TabBarView(
                 controller: _tabController,
@@ -134,7 +134,7 @@ class _TransfersScreenState extends State<TransfersScreen>
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xs, AppSpacing.xl, AppSpacing.xxl),
           itemCount: transfers.length,
           itemBuilder: (context, index) {
             final transfer = transfers[index];
@@ -172,23 +172,23 @@ class _TransfersScreenState extends State<TransfersScreen>
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(AppSpacing.xxxl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: 64,
+              size: AppIconSize.hero,
               color: context.palette.textMuted,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               title,
               style: AppTextStyles.heading3.copyWith(
                 color: context.palette.textSecondary,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               message,
               style: AppTextStyles.body2.copyWith(
@@ -215,10 +215,10 @@ class _TransferCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
         color: context.palette.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: context.palette.border),
         boxShadow: [
           BoxShadow(
@@ -229,14 +229,14 @@ class _TransferCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 _getStatusIcon(),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,7 +249,7 @@ class _TransferCard extends StatelessWidget {
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         'To: ${transfer.targetDevice}',
                         style: AppTextStyles.caption.copyWith(
@@ -262,15 +262,15 @@ class _TransferCard extends StatelessWidget {
                 _getStatusBadge(),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Row(
               children: [
                 Icon(
                   Icons.access_time,
-                  size: 14,
+                  size: AppIconSize.xs,
                   color: context.palette.textMuted,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppSpacing.xs),
                 Text(
                   _formatDateTime(transfer.startTime),
                   style: AppTextStyles.caption.copyWith(
@@ -288,17 +288,17 @@ class _TransferCard extends StatelessWidget {
               ],
             ),
             if (transfer.status == TransferStatus.inProgress) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               LinearProgressIndicator(
                 value: transfer.progress,
                 backgroundColor: Theme.of(context)
                     .colorScheme
                     .outline
-                    .withValues(alpha: 0.2),
+                    .withValues(alpha: AppOpacity.medium),
                 valueColor:
                     const AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -320,15 +320,15 @@ class _TransferCard extends StatelessWidget {
             ],
             if (transfer.status == TransferStatus.completed &&
                 transfer.endTime != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
                   const Icon(
                     Icons.check_circle,
-                    size: 14,
+                    size: AppIconSize.xs,
                     color: AppColors.success,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppSpacing.xs),
                   Text(
                     'Completed ${_formatDateTime(transfer.endTime!)}',
                     style: AppTextStyles.caption.copyWith(
@@ -372,13 +372,13 @@ class _TransferCard extends StatelessWidget {
     }
 
     return Container(
-      width: 40,
-      height: 40,
+      width: AppSizes.iconTile,
+      height: AppSizes.iconTile,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
+        color: color.withValues(alpha: AppOpacity.subtle),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
-      child: Icon(icon, color: color, size: 20),
+      child: Icon(icon, color: color, size: AppIconSize.lg),
     );
   }
 
@@ -410,10 +410,10 @@ class _TransferCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: color.withValues(alpha: AppOpacity.subtle),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Text(
         text,

@@ -25,7 +25,7 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: AppDurations.normal,
       vsync: this,
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
@@ -50,18 +50,18 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
         return Transform.scale(
           scale: _scaleAnimation.value,
           child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: AppSpacing.md),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: Colors.black.withValues(alpha: AppOpacity.faint),
                   blurRadius: _shadowAnimation.value,
                   offset: const Offset(0, 4),
                   spreadRadius: 0,
                 ),
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: Colors.black.withValues(alpha: AppOpacity.hairline),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                   spreadRadius: 0,
@@ -75,14 +75,14 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                 onTapDown: (_) => _controller.forward(),
                 onTapUp: (_) => _controller.reverse(),
                 onTapCancel: () => _controller.reverse(),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.outline.withValues(alpha: AppOpacity.subtle),
                       width: 1,
                     ),
                   ),
@@ -90,8 +90,8 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                     children: [
                       // Device Icon with enhanced styling
                       Container(
-                        width: 56,
-                        height: 56,
+                        width: AppSizes.iconTileLg,
+                        height: AppSizes.iconTileLg,
                         decoration: BoxDecoration(
                           color: context.isDark
                               ? context.palette.accentSoft
@@ -102,13 +102,13 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    AppColors.primary.withValues(alpha: 0.15),
-                                    AppColors.secondary.withValues(alpha: 0.1),
+                                    AppColors.primary.withValues(alpha: AppOpacity.soft),
+                                    AppColors.secondary.withValues(alpha: AppOpacity.subtle),
                                   ],
                                 ),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
                           border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.2),
+                            color: AppColors.primary.withValues(alpha: AppOpacity.medium),
                             width: 1,
                           ),
                         ),
@@ -116,14 +116,14 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                           child: Text(
                             _getDeviceProvider().getDeviceTypeIcon(widget.device.type),
                             style: const TextStyle(
-                              fontSize: 28,
+                              fontSize: AppFontSize.display,
                               color: AppColors.primary,
                             ),
                           ),
                         ),
                       ),
                       
-                      const SizedBox(width: 20),
+                      const SizedBox(width: AppSpacing.xl),
                       
                       // Device Info with improved typography
                       Expanded(
@@ -144,18 +144,18 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
+                                    horizontal: AppSpacing.md,
+                                    vertical: AppSpacing.sm,
                                   ),
                                   decoration: BoxDecoration(
                                     color: widget.device.isOnline 
-                                        ? AppColors.success.withValues(alpha: 0.15)
-                                        : AppColors.error.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(12),
+                                        ? AppColors.success.withValues(alpha: AppOpacity.soft)
+                                        : AppColors.error.withValues(alpha: AppOpacity.soft),
+                                    borderRadius: BorderRadius.circular(AppRadius.md),
                                     border: Border.all(
                                       color: widget.device.isOnline 
-                                          ? AppColors.success.withValues(alpha: 0.3)
-                                          : AppColors.error.withValues(alpha: 0.3),
+                                          ? AppColors.success.withValues(alpha: AppOpacity.strong)
+                                          : AppColors.error.withValues(alpha: AppOpacity.strong),
                                       width: 1,
                                     ),
                                   ),
@@ -166,13 +166,13 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                                           ? AppColors.success 
                                           : AppColors.error,
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 11,
+                                      fontSize: AppFontSize.xxs,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: AppSpacing.sm),
                             Text(
                               widget.device.address,
                               style: AppTextStyles.body2.copyWith(
@@ -180,15 +180,15 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppSpacing.md),
                             Row(
                               children: [
                                 Icon(
                                   Icons.access_time,
-                                  size: 16,
+                                  size: AppIconSize.sm,
                                   color: context.palette.textSecondary,
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: AppSpacing.sm),
                                 Text(
                                   _getDeviceProvider().formatLastSeen(widget.device.lastSeen),
                                   style: AppTextStyles.caption.copyWith(
@@ -196,16 +196,16 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const SizedBox(width: 20),
+                                const SizedBox(width: AppSpacing.xl),
                                 if (widget.device.capabilities.isNotEmpty) ...[
                                   Icon(
                                     Icons.security,
-                                    size: 16,
+                                    size: AppIconSize.sm,
                                     color: widget.device.capabilities.contains('Encryption')
                                         ? AppColors.success
                                         : context.palette.textMuted,
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: AppSpacing.sm),
                                   Text(
                                     widget.device.capabilities.contains('Encryption') ? 'Encrypted' : 'Standard',
                                     style: AppTextStyles.caption.copyWith(
@@ -224,14 +224,14 @@ class _DeviceCardState extends State<DeviceCard> with SingleTickerProviderStateM
                       
                       // Enhanced action icon
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(AppSpacing.sm),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                         child: Icon(
                           Icons.arrow_forward_ios,
-                          size: 18,
+                          size: AppIconSize.md,
                           color: context.palette.textSecondary,
                         ),
                       ),

@@ -32,24 +32,24 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           children: [
             // QR Code Container
             Container(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(AppSpacing.xxxl),
               decoration: BoxDecoration(
                 color: context.palette.surface,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(AppRadius.xxl),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withValues(alpha: AppOpacity.subtle),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
                 ],
                 border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
+                  color: AppColors.primary.withValues(alpha: AppOpacity.medium),
                   width: 2,
                 ),
               ),
@@ -71,15 +71,15 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                                 AppColors.secondary,
                               ],
                             ),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
                     ),
                     child: const Icon(
                       Icons.devices_other,
-                      size: 40,
+                      size: AppIconSize.xxl,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xxl),
                   // QR Code
                   QrImageView(
                     data: _qrData,
@@ -93,15 +93,15 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                       color: AppColors.primary,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xxl),
                   // Device Info
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.primary.withValues(alpha: AppOpacity.subtle),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2),
+                        color: AppColors.primary.withValues(alpha: AppOpacity.medium),
                         width: 1,
                       ),
                     ),
@@ -111,10 +111,10 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                           'Device Information',
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 16,
+                            fontSize: AppFontSize.md,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.md),
                         _buildInfoRow('Device ID', 'test-device-123'),
                         _buildInfoRow('IP Address', '192.168.1.100'),
                         _buildInfoRow('Port', '8080'),
@@ -125,13 +125,13 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxxl),
             // Instructions
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               decoration: BoxDecoration(
                 color: context.palette.surfaceMuted,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,19 +141,19 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                       Icon(
                         Icons.info_outline,
                         color: AppColors.primary,
-                        size: 20,
+                        size: AppIconSize.lg,
                       ),
-                      SizedBox(width: 8),
+                      SizedBox(width: AppSpacing.sm),
                       Text(
                         'How to connect',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 16,
+                          fontSize: AppFontSize.md,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   _buildInstructionStep(
                     1,
                     'Open SwiftShare on another device',
@@ -173,7 +173,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
             // Test QR Code Button
             ElevatedButton.icon(
               onPressed: _generateTestQR,
@@ -183,9 +183,9 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
               ),
             ),
@@ -197,7 +197,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -221,7 +221,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
 
   Widget _buildInstructionStep(int step, String instruction) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -230,7 +230,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
             height: 24,
             decoration: BoxDecoration(
               color: AppColors.primary,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Center(
               child: Text(
@@ -238,17 +238,17 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                  fontSize: AppFontSize.xs,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
               instruction,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: AppFontSize.sm,
                 height: 1.4,
               ),
             ),
@@ -264,7 +264,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
     });
 
     // Simulate sharing
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(AppDurations.pulse, () {
       if (!mounted) return;
       setState(() {
         _isSharing = false;
@@ -275,7 +275,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
         ),
       );
@@ -299,7 +299,7 @@ class _QRDisplayScreenState extends State<QRDisplayScreen> {
         backgroundColor: AppColors.accent,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
       ),
     );

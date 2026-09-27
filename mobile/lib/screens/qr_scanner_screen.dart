@@ -25,7 +25,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: AppDurations.pulse,
       vsync: this,
     )..repeat();
     _scanAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -107,8 +107,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(50),
+                color: AppColors.error.withValues(alpha: AppOpacity.medium),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
               child: const Icon(
                 Icons.camera_alt_outlined,
@@ -116,25 +116,25 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
             const Text(
               'Camera Permission Required',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: AppFontSize.xxl,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             const Text(
               'SwiftShare needs camera access to scan QR codes.',
               style: TextStyle(
                 color: Colors.white70,
-                fontSize: 16,
+                fontSize: AppFontSize.md,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxxl),
             ElevatedButton.icon(
               onPressed: _checkCameraPermission,
               icon: const Icon(Icons.camera_alt),
@@ -143,9 +143,9 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
               ),
             ),
@@ -178,31 +178,31 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(40),
+                      color: AppColors.error.withValues(alpha: AppOpacity.medium),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
                     ),
                     child: const Icon(
                       Icons.error_outline,
-                      size: 40,
+                      size: AppIconSize.xxl,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   const Text(
                     'Camera Error',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: AppFontSize.xl,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     error.errorDetails?.message ?? 'Unknown error',
                     style: const TextStyle(color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xxl),
                   ElevatedButton(
                     onPressed: () {
                       controller.start();
@@ -222,7 +222,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   Widget _buildScanOverlay() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
+        color: Colors.black.withValues(alpha: AppOpacity.high),
       ),
       child: Center(
         child: Column(
@@ -232,17 +232,17 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               'Position QR code within the frame',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: AppFontSize.md,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxxl),
             Container(
               width: 280,
               height: 280,
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.primary, width: 3),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: Stack(
                 children: [
@@ -281,8 +281,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                     top: 0,
                     left: 0,
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: AppSizes.iconTile,
+                      height: AppSizes.iconTile,
                       decoration: const BoxDecoration(
                         border: Border(
                           top: BorderSide(color: AppColors.primary, width: 4),
@@ -295,8 +295,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                     top: 0,
                     right: 0,
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: AppSizes.iconTile,
+                      height: AppSizes.iconTile,
                       decoration: const BoxDecoration(
                         border: Border(
                           top: BorderSide(color: AppColors.primary, width: 4),
@@ -309,8 +309,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                     bottom: 0,
                     left: 0,
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: AppSizes.iconTile,
+                      height: AppSizes.iconTile,
                       decoration: const BoxDecoration(
                         border: Border(
                           bottom:
@@ -324,8 +324,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                     bottom: 0,
                     right: 0,
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: AppSizes.iconTile,
+                      height: AppSizes.iconTile,
                       decoration: const BoxDecoration(
                         border: Border(
                           bottom:
@@ -338,18 +338,18 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: AppSpacing.huge),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(20),
+                color: Colors.black.withValues(alpha: AppOpacity.overlay),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: const Text(
                 'Scanning for SwiftShare devices...',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: AppFontSize.sm,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -423,7 +423,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
         ),
         title: Row(
           children: [
@@ -431,7 +431,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               title == 'Error' ? Icons.error : Icons.qr_code,
               color: title == 'Error' ? AppColors.error : AppColors.primary,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Text(title),
           ],
         ),
@@ -440,17 +440,17 @@ class _QRScannerScreenState extends State<QRScannerScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey.withValues(alpha: AppOpacity.subtle),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Text(
                 content,
                 style: const TextStyle(fontFamily: 'monospace'),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             const Text(
               'Would you like to connect to this device?',
               style: TextStyle(fontWeight: FontWeight.w500),
@@ -489,7 +489,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
       ),
     );

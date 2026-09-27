@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+// Every file that imports the theme also gets the design tokens.
+export 'design_tokens.dart';
+
 /// Semantic colours for SwiftShare. Screens read these through
 /// `context.palette` instead of hard-coding hex values, so every surface and
 /// every piece of text switches correctly between light and dark mode.
@@ -373,6 +376,16 @@ class AppColors {
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
+  static const Color pink = Color(0xFFF472B6);
+
+  /// Wordmark colours ("Swift" + "Share") and the logo ring track, used on the
+  /// always-light splash screen.
+  static const Color brandInk = Color(0xFF1E1B4B);
+  static const Color brandIndigo = Color(0xFF4F46E5);
+  static const Color ringTrack = Color(0xFFEEF2FF);
+
+  /// Dark text for content that sits on a fixed white box (QR areas).
+  static const Color ink = Color(0xFF0F172A);
 
   /// Light-mode page background. Only the splash screen should use this
   /// directly (it matches the native Android splash).
