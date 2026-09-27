@@ -33,7 +33,7 @@ const HowItWorks = () => {
 
         <div className="grid gap-5 md:grid-cols-3">
           {steps.map((step, index) => (
-            <div key={step.title} className="rounded-xl border border-border bg-white p-6">
+            <div key={step.title} className="card-surface p-6">
               <div className="mb-5 flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                   {index + 1}

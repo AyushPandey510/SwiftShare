@@ -1,15 +1,17 @@
 import { Download, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
+import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => {
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-white/90 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex min-w-0 items-center gap-2">
-          <img src="/logo-mark.svg" alt="" width={40} height={40} className="h-10 w-10 shrink-0" />
+          <img src="/logo-mark.svg" alt="" width={40} height={40} className="h-10 w-10 shrink-0 dark:hidden" />
+          <img src="/logo-mark-dark.svg" alt="" width={40} height={40} className="hidden h-10 w-10 shrink-0 dark:block" />
           <span className="text-xl font-bold tracking-tight sm:text-2xl">
-            <span className="text-[#1E1B4B]">Swift</span>
-            <span className="text-[#4F46E5]">Share</span>
+            <span className="text-wordmark">Swift</span>
+            <span className="text-wordmark-accent">Share</span>
           </span>
         </Link>
 
@@ -29,6 +31,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <ThemeToggle />
           <Link
             to="/access"
             aria-label="Get file"

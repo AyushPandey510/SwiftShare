@@ -138,7 +138,7 @@ const AccessFilePage = () => {
           </p>
         </div>
 
-        <div className="min-w-0 rounded-2xl border border-border bg-white p-4 shadow-xl sm:p-6 md:p-8">
+        <div className="min-w-0 panel p-4 sm:p-6 md:p-8">
           <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -158,7 +158,7 @@ const AccessFilePage = () => {
           </form>
 
           {error && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="alert-error mt-4 flex items-center gap-2">
               <AlertIcon className="h-4 w-4 shrink-0" />
               {error}
             </div>
@@ -166,7 +166,7 @@ const AccessFilePage = () => {
 
           {file && (
             <div className="mt-6 min-w-0 border-t border-border pt-5">
-              <div className="mb-4 flex items-center gap-2 text-green-700">
+              <div className="mb-4 flex items-center gap-2 text-success">
                 <CheckCircle className="h-5 w-5 shrink-0" />
                 <span className="font-semibold text-foreground">{downloadsLeft > 0 ? "Ready to download" : "Download limit reached"}</span>
               </div>
@@ -179,7 +179,7 @@ const AccessFilePage = () => {
                   <p className="font-semibold text-foreground [overflow-wrap:anywhere]">{file.filename}</p>
                   <p className="text-sm text-muted-foreground">
                     {formatFileSize(file.size)} • Code:{" "}
-                    <code className="rounded bg-white px-1 py-0.5 font-mono text-xs text-foreground">
+                    <code className="code-chip">
                       {file.code}
                     </code>
                   </p>
@@ -205,8 +205,8 @@ const AccessFilePage = () => {
 
               {qrUrl && downloadsLeft > 0 && (
                 <div className="mt-5 flex justify-center">
-                  <div className="flex w-full max-w-[208px] min-w-0 flex-col items-center rounded-lg border border-border bg-white p-4">
-                    <img src={qrUrl} alt="QR code for downloading the shared file" className="aspect-square h-auto w-full max-w-40 object-contain" />
+                  <div className="flex w-full max-w-[208px] min-w-0 flex-col items-center rounded-lg border border-border bg-card p-4">
+                    <img src={qrUrl} alt="QR code for downloading the shared file" className="aspect-square h-auto w-full max-w-40 rounded-md bg-qr object-contain p-2" />
                     <p className="mt-2 flex items-center justify-center gap-1 text-center text-xs font-medium text-muted-foreground">
                       <QrCode className="h-3.5 w-3.5 shrink-0" />
                       Scan to download

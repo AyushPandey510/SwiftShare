@@ -9,11 +9,11 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-muted px-4">
       <div className="text-center">
         <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-gray-600">This page could not be found.</p>
-        <a href="/" className="text-blue-500 underline hover:text-blue-700">
+        <p className="mb-4 text-xl text-muted-foreground">This page could not be found.</p>
+        <a href="/" className="text-primary underline hover:text-primary/80">
           Go to SwiftShare
         </a>
       </div>

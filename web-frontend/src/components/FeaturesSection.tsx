@@ -36,7 +36,7 @@ const FeaturesSection = () => {
 
         <div className="grid gap-5 md:grid-cols-3">
           {features.map((feature) => (
-            <div key={feature.title} className="rounded-xl border border-border bg-white p-6">
+            <div key={feature.title} className="card-surface p-6">
               <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10">
                 <feature.icon className="h-6 w-6 text-primary" />
               </div>

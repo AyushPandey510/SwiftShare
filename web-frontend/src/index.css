@@ -1,149 +1,207 @@
-/* Import Inter font (similar to Figma's clean typography) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* ═══════════════════════════════════════════════════════════════════════════
+   SwiftShare web design tokens
+
+   1. Fonts
+   2. Tokens: every colour, radius, shadow and timing, for light AND dark.
+      Components never use raw colours (bg-white, text-gray-400, #hex);
+      they use the Tailwind names mapped in tailwind.config.ts
+      (bg-card, text-muted-foreground, text-success, ...).
+   3. Base element styles
+   4. Components (reusable class recipes)
+   5. Utilities
+   6. Accessibility
+
+   Colours match the mobile app (mobile/lib/utils/theme.dart → AppPalette).
+   Values are HSL channels so Tailwind opacity works: bg-primary/10.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Fonts ─────────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Figma-inspired Modern Design System - All colors in HSL */
+/* ── 2. Tokens ────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
     color-scheme: light;
 
-    /* Clean white background */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
-
-    /* Card styles - white with shadows */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
-
-    /* Popover styles */
+    /* Surfaces */
+    --background: 210 40% 98%;            /* page            #F8FAFC */
+    --foreground: 222 47% 11%;            /* main text       #0F172A */
+    --card: 0 0% 100%;                    /* cards, panels   #FFFFFF */
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary - Figma's purple/blue accent */
-    --primary: 244 79% 65%;
+    /* Brand */
+    --primary: 239 84% 67%;               /* #6366F1 */
     --primary-foreground: 0 0% 100%;
+    --secondary: 218 52% 96%;             /* #EFF3FA */
+    --secondary-foreground: 222 47% 11%;
+    --accent: 232 100% 96%;               /* soft indigo tint  #E9ECFF */
+    --accent-foreground: 243 75% 59%;     /* #4F46E5 */
 
-    /* Secondary - Subtle gray */
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 0 0% 9%;
+    /* Text */
+    --body: 215 25% 27%;                  /* body copy in cards #334155 */
+    --muted: 218 52% 96%;                 /* quiet fills     #EFF3FA */
+    --muted-foreground: 218 19% 46%;      /* secondary text  #60708C */
+    --subtle-foreground: 215 22% 64%;     /* hints, captions #8FA0B8 */
 
-    /* Muted - Light grays */
-    --muted: 240 5% 96%;
-    --muted-foreground: 0 0% 45%;
+    /* Status */
+    --destructive: 0 84% 60%;             /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+    --success: 161 94% 30%;               /* #059669 */
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 44%;                /* #D97706 */
+    --warning-foreground: 0 0% 100%;
+    --info: 200 98% 39%;                  /* #0284C7 */
+    --info-foreground: 0 0% 100%;
 
-    /* Accent - Vibrant purple */
-    --accent: 252 95% 70%;
-    --accent-foreground: 0 0% 100%;
+    /* Lines & focus */
+    --border: 216 41% 93%;                /* #E5EBF4 */
+    --input: 215 39% 90%;                 /* #DDE5F0 */
+    --ring: 239 84% 67%;
 
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    /* Wordmark ("Swift" + "Share") */
+    --wordmark: 244 47% 20%;              /* #1E1B4B */
+    --wordmark-accent: 243 75% 59%;       /* #4F46E5 */
 
-    /* Borders - Very light gray */
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 244 79% 65%;
+    /* Footer (dark band in both themes) */
+    --footer: 222 47% 11%;                /* #0F172A */
+    --footer-foreground: 222 56% 96%;     /* #F1F4FB */
+    --footer-muted: 215 20% 65%;          /* #94A3B8 */
+    --footer-wordmark: 226 100% 94%;      /* #E0E7FF */
+    --footer-wordmark-accent: 234 89% 74%;/* #818CF8 */
 
-    /* Border radius - Figma style */
-    --radius: 0.75rem;
+    /* QR codes need a white background to scan, in every theme */
+    --qr: 0 0% 100%;
 
-    /* Custom gradient colors for floating cards */
-    --gradient-purple: 252 95% 85%;
-    --gradient-blue: 220 90% 85%;
-    --gradient-pink: 330 85% 85%;
+    /* Shape */
+    --radius: 0.75rem;                    /* 12px: base for rounded-lg/md/sm */
+
+    /* Elevation */
+    --shadow-color: 215 25% 40%;
+    --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.06);
+    --shadow-card: 0 12px 24px -12px hsl(var(--shadow-color) / 0.18);
+    --shadow-raised: 0 20px 40px -16px hsl(var(--shadow-color) / 0.28);
+
+    /* Motion */
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --ease-standard: cubic-bezier(0.22, 1, 0.36, 1); /* ease-out-cubic */
+
+    /* Type */
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
+  /* Midnight dark theme: same names, different values. */
+  .dark {
+    color-scheme: dark;
+
+    --background: 226 49% 8%;             /* #0B1020 */
+    --foreground: 222 56% 96%;            /* #F1F4FB */
+    --card: 224 42% 13%;                  /* #131A2E */
+    --card-foreground: 222 56% 96%;
+    --popover: 224 42% 13%;
+    --popover-foreground: 222 56% 96%;
+
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 225 41% 18%;             /* #1B2440 */
+    --secondary-foreground: 222 56% 96%;
+    --accent: 230 42% 24%;                /* #232B55 */
+    --accent-foreground: 230 94% 82%;     /* #A5B4FC */
+
+    --body: 223 33% 88%;                  /* #D5DBEA */
+    --muted: 225 41% 18%;
+    --muted-foreground: 221 26% 73%;      /* #A9B4CC */
+    --subtle-foreground: 222 19% 58%;     /* #7F8BA8 */
+
+    --destructive: 0 91% 71%;             /* #F87171 */
+    --destructive-foreground: 226 49% 8%;
+    --success: 158 64% 52%;               /* #34D399 */
+    --success-foreground: 226 49% 8%;
+    --warning: 43 96% 56%;                /* #FBBF24 */
+    --warning-foreground: 226 49% 8%;
+    --info: 198 93% 60%;                  /* #38BDF8 */
+    --info-foreground: 226 49% 8%;
+
+    --border: 224 39% 23%;                /* #243052 */
+    --input: 225 33% 30%;                 /* #334066 */
+    --ring: 230 94% 82%;
+
+    --wordmark: 226 100% 94%;             /* #E0E7FF */
+    --wordmark-accent: 230 94% 82%;       /* #A5B4FC */
+
+    --footer: 224 52% 6%;                 /* #070B16 */
+    --footer-foreground: 222 56% 96%;
+    --footer-muted: 222 19% 58%;
+    --footer-wordmark: 226 100% 94%;
+    --footer-wordmark-accent: 234 89% 74%;
+
+    --shadow-color: 0 0% 0%;
+    --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.3);
+    --shadow-card: 0 12px 24px -12px hsl(var(--shadow-color) / 0.5);
+    --shadow-raised: 0 20px 40px -16px hsl(var(--shadow-color) / 0.6);
+  }
+}
+
+/* ── 3. Base ──────────────────────────────────────────────────────────────── */
+@layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  ::selection {
+    @apply bg-primary/20;
   }
 }
 
-/* Modern utility classes */
-@layer utilities {
-  .font-inter {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-
-  /* Gradient backgrounds for floating cards */
-  .gradient-card-purple {
-    background: linear-gradient(135deg, hsl(var(--gradient-purple)) 0%, hsl(var(--gradient-blue)) 100%);
-  }
-
-  .gradient-card-blue {
-    background: linear-gradient(135deg, hsl(var(--gradient-blue)) 0%, hsl(var(--gradient-purple)) 100%);
-  }
-
-  .gradient-card-pink {
-    background: linear-gradient(135deg, hsl(var(--gradient-pink)) 0%, hsl(var(--gradient-purple)) 100%);
-  }
-}
-
-/* Modern component styles */
+/* ── 4. Components ────────────────────────────────────────────────────────── */
 @layer components {
-  /* Floating gradient cards */
-  .floating-card {
-    @apply rounded-3xl shadow-lg;
-    transition: transform 0.3s ease;
+  /* Standard content card: <div className="card-surface p-6"> */
+  .card-surface {
+    @apply rounded-xl border border-border bg-card text-card-foreground;
   }
 
-  .floating-card:hover {
-    transform: translateY(-4px);
+  /* Larger elevated panel (upload / access boxes) */
+  .panel {
+    @apply rounded-2xl border border-border bg-card text-card-foreground shadow-raised;
   }
 
-  /* Feature cards */
-  .feature-card {
-    @apply bg-card rounded-2xl p-8 shadow-sm border border-border;
-    transition: all 0.3s ease;
+  /* Inline code / share code chip */
+  .code-chip {
+    @apply rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground;
   }
 
-  .feature-card:hover {
-    @apply shadow-lg;
-    transform: translateY(-2px);
+  /* Status messages */
+  .alert-error {
+    @apply rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive;
   }
 
-  /* Modern button */
-  .btn-modern {
-    @apply bg-primary text-primary-foreground rounded-xl px-8 py-4 font-semibold;
-    transition: all 0.2s ease;
-  }
-
-  .btn-modern:hover {
-    @apply shadow-lg;
-    transform: scale(1.02);
+  .alert-success {
+    @apply rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success;
   }
 }
 
-/* Modern animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+/* ── 5. Utilities ─────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Smooth colour change when switching light/dark */
+  .theme-transition {
+    transition-property: color, background-color, border-color;
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--ease-standard);
   }
 }
 
+/* ── 6. Accessibility ─────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

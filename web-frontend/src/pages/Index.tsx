@@ -101,7 +101,7 @@ const Index = () => {
               <Link
                 key={useCase.path}
                 to={useCase.path}
-                className="rounded-xl border border-border bg-white p-5 transition-colors hover:border-primary"
+                className="card-surface p-5 transition-colors duration-normal hover:border-primary"
               >
                 <h3 className="text-xl font-semibold text-foreground">{useCase.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{useCase.description}</p>
@@ -124,7 +124,7 @@ const Index = () => {
               File sizes, download limits, and what happens after you share.
             </p>
           </div>
-          <Accordion type="single" collapsible className="rounded-xl border border-border bg-white px-4">
+          <Accordion type="single" collapsible className="card-surface px-4">
             {faqs.map((faq, index) => (
               <AccordionItem key={faq.question} value={`faq-${index}`}>
                 <AccordionTrigger className="text-left text-base font-semibold text-foreground">

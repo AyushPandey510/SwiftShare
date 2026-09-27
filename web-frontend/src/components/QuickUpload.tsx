@@ -160,7 +160,7 @@ const QuickUpload = ({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-white shadow-xl">
+        <div className="panel">
           <div className="grid gap-3 border-b border-border bg-secondary/60 p-3 md:grid-cols-2">
             <button
               type="button"
@@ -168,21 +168,21 @@ const QuickUpload = ({
               className={`relative grid min-w-0 grid-cols-[minmax(0,1fr)_1.25rem] items-center gap-3 rounded-xl border px-4 py-4 text-left transition-colors sm:px-5 ${
                 mode === "file"
                   ? "border-primary bg-primary text-primary-foreground shadow-md"
-                  : "border-border bg-white text-foreground hover:border-primary/50"
+                  : "border-border bg-card text-foreground hover:border-primary/50"
               }`}
               onClick={() => setMode("file")}
             >
               <span className="flex min-w-0 items-center gap-3">
                 <span
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                    mode === "file" ? "bg-white/15" : "bg-primary/10 text-primary"
+                    mode === "file" ? "bg-primary-foreground/15" : "bg-primary/10 text-primary"
                   }`}
                 >
                   <Upload className="h-5 w-5" />
                 </span>
                 <span className="min-w-0 [overflow-wrap:anywhere]">
                   <span className="block text-base font-bold">File upload</span>
-                  <span className={`block text-xs ${mode === "file" ? "text-white/80" : "text-muted-foreground"}`}>
+                  <span className={`block text-xs ${mode === "file" ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
                     Documents, media, archives
                   </span>
                 </span>
@@ -195,21 +195,21 @@ const QuickUpload = ({
               className={`relative grid min-w-0 grid-cols-[minmax(0,1fr)_1.25rem] items-center gap-3 rounded-xl border px-4 py-4 text-left transition-colors sm:px-5 ${
                 mode === "text"
                   ? "border-primary bg-primary text-primary-foreground shadow-md"
-                  : "border-border bg-white text-foreground hover:border-primary/50"
+                  : "border-border bg-card text-foreground hover:border-primary/50"
               }`}
               onClick={() => setMode("text")}
             >
               <span className="flex min-w-0 items-center gap-3">
                 <span
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                    mode === "text" ? "bg-white/15" : "bg-primary/10 text-primary"
+                    mode === "text" ? "bg-primary-foreground/15" : "bg-primary/10 text-primary"
                   }`}
                 >
                   <ClipboardType className="h-5 w-5" />
                 </span>
                 <span className="min-w-0 [overflow-wrap:anywhere]">
                   <span className="block text-base font-bold">Paste text</span>
-                  <span className={`block text-xs ${mode === "text" ? "text-white/80" : "text-muted-foreground"}`}>
+                  <span className={`block text-xs ${mode === "text" ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
                     Notes, code, snippets
                   </span>
                 </span>
@@ -222,7 +222,7 @@ const QuickUpload = ({
             <div className="min-w-0 p-4 sm:p-6 md:p-8">
               {uploadedFile ? (
                 <div>
-                  <div className="mb-4 flex items-start gap-2 text-green-700">
+                  <div className="mb-4 flex items-start gap-2 text-success">
                     <CheckCircle className="mt-0.5 h-6 w-6 shrink-0" />
                     <span className="min-w-0 text-lg font-semibold text-foreground">Your file is ready to share</span>
                   </div>
@@ -230,13 +230,13 @@ const QuickUpload = ({
                   <div className="min-w-0 space-y-4">
                     <div className="flex justify-center">
                       {qrUrl ? (
-                        <div className="flex w-full max-w-[208px] min-w-0 flex-col items-center rounded-lg border border-green-200 bg-white p-4">
+                        <div className="flex w-full max-w-[208px] min-w-0 flex-col items-center rounded-lg border border-success/30 bg-card p-4">
                           <img
                             src={qrUrl}
                             alt="QR code linking to the shared file"
-                            className="aspect-square h-auto w-full max-w-40 object-contain"
+                            className="aspect-square h-auto w-full max-w-40 rounded-md bg-qr object-contain p-2"
                           />
-                          <p className="mt-3 flex items-center justify-center gap-1 text-center text-sm font-medium text-green-700">
+                          <p className="mt-3 flex items-center justify-center gap-1 text-center text-sm font-medium text-success">
                             <QrCode className="h-4 w-4 shrink-0" />
                             Scan to download
                           </p>
@@ -265,12 +265,12 @@ const QuickUpload = ({
 
                     <p className="mt-1 text-xs text-muted-foreground">
                       File code:{" "}
-                      <code className="rounded bg-white px-1 py-0.5 font-mono text-xs text-foreground">
+                      <code className="code-chip">
                         {uploadedFile.code}
                       </code>
                     </p>
 
-                    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-white pl-3 pr-1">
+                    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-background pl-3 pr-1">
                       <Link2 className="h-4 w-4 shrink-0 text-primary" />
                       <input
                         aria-label="Download link"
@@ -293,7 +293,7 @@ const QuickUpload = ({
                         href={uploadedFile.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex min-h-11 min-w-0 w-full items-center justify-center rounded-md border border-border bg-white px-3 py-2 text-center text-sm font-medium text-foreground hover:bg-secondary/50"
+                        className="flex min-h-11 min-w-0 w-full items-center justify-center rounded-md border border-border bg-card px-3 py-2 text-center text-sm font-medium text-foreground hover:bg-secondary/50"
                       >
                         <Download className="mr-2 h-4 w-4 shrink-0" />
                         Download file
@@ -397,7 +397,7 @@ const QuickUpload = ({
                 value={uploadedFile?.maxDownloads ?? maxDownloads}
                 disabled={isUploading || Boolean(uploadedFile)}
                 onChange={(event) => setMaxDownloads(Number(event.target.value))}
-                className="mt-2 min-h-11 min-w-0 w-full rounded-lg border border-input bg-white px-3 py-2 text-base sm:text-sm"
+                className="mt-2 min-h-11 min-w-0 w-full rounded-lg border border-input bg-background px-3 py-2 text-base sm:text-sm"
               >
                 {downloadOptions.map((count) => (
                   <option key={count} value={count}>

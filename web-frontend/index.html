@@ -16,7 +16,21 @@
     />
     <meta name="author" content="SwiftShare" />
     <meta name="robots" content="index,follow" />
-    <meta name="theme-color" content="#4F46E5" />
+    <meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B1020" media="(prefers-color-scheme: dark)" />
+    <!-- Apply the saved / system theme before first paint (no white flash). -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var dark =
+            saved === "dark" ||
+            ((!saved || saved === "system") &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
     <link rel="canonical" href="https://swift-share-tau.vercel.app/" />
 
     <!-- Icons -->
